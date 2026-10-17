@@ -16,7 +16,6 @@ See `.env.example`. Required in production:
 | `NODE_ENV=production` | Enables secure cookies, hides template notices, blocks sample data |
 | `APP_URL` | Public origin, e.g. `https://trade.example.com` — used for links and CSRF checks |
 | `DATABASE_URL` | Postgres connection string (use TLS for managed databases) |
-| `SESSION_SECRET` | 32+ random bytes (`openssl rand -hex 32`) |
 | `PAYPAL_ENV`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | See `docs/PAYPAL.md` |
 | `UPLOAD_DIR` | Writable, persistent, **not** publicly served |
 | `SMTP_URL`, `MAIL_FROM` | e.g. `smtps://user:pass@smtp.provider.com:465` |

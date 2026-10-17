@@ -28,7 +28,7 @@ environment; Drizzle provides the same typed-ORM + migrations role with no nativ
 
 ```bash
 # 1. Postgres 16 running locally, then:
-cp .env.example .env                     # set DATABASE_URL and SESSION_SECRET
+cp .env.example .env                     # set DATABASE_URL
 npm install
 npm run db:migrate                       # apply migrations
 npm run db:seed -- --demo                # reference data + 337-listing sample catalog + demo buyers
@@ -113,5 +113,5 @@ Fully implemented and covered by automated tests:
   Postgres-backed rate limiting, CSRF origin checks, security headers (CSP, frame denial, HSTS),
   email outbox with optional SMTP delivery.
 
-See `docs/LAUNCH_CHECKLIST.md` for what must happen before going live and the list of external
+Railway deployment: `docs/RAILWAY.md`. See `docs/LAUNCH_CHECKLIST.md` for what must happen before going live and the list of external
 dependencies.

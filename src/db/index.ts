@@ -4,9 +4,15 @@ import * as schema from "./schema";
 
 const globalForDb = globalThis as unknown as { __valdenPool?: Pool };
 
+/**
+ * The pool connects lazily (on first query), so `next build` can run without a database —
+ * Railway, like most Docker builders, does not expose runtime variables during the image build.
+ */
 function makePool() {
   const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
+  if (!url && process.env.NEXT_PHASE !== "phase-production-build") {
+    console.warn(JSON.stringify({ level: "warn", msg: "DATABASE_URL is not set; database queries will fail" }));
+  }
   return new Pool({ connectionString: url, max: Number(process.env.DB_POOL_MAX ?? 10) });
 }
 

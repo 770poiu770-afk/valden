@@ -30,7 +30,7 @@
 ## Infrastructure
 
 - [ ] Domain purchased (suggestions — availability not checked: valden.trade, valdensupply.com, valden-distribution.com).
-- [ ] HTTPS, `APP_URL`, `NODE_ENV=production`, strong `SESSION_SECRET`; `ALLOW_SAMPLE_DATA` unset.
+- [ ] HTTPS, `APP_URL`, `NODE_ENV=production`; `ALLOW_SAMPLE_DATA` unset.
 - [ ] Managed Postgres with PITR backups; restore tested.
 - [ ] Persistent storage for `UPLOAD_DIR` (or S3 implementation) with backups.
 - [ ] SMTP configured; SPF/DKIM/DMARC set for the sending domain; test password reset end-to-end.
