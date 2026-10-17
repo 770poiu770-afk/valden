@@ -1,0 +1,83 @@
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { addresses, roles, users } from "@/db/schema";
+import { hashPassword, loadActorByUserId, type Actor } from "@/lib/auth";
+import { changeCompanyStatus, registerBusiness, type RegistrationInput } from "@/server/accounts";
+import type { StoredFile } from "@/server/uploads";
+import { setPayPalGateway, type PayPalGateway, type PayPalOrder, type PayPalRefund } from "@/server/paypal";
+
+export const fakeDoc = (): StoredFile => ({ storageKey: `2026-10/${randomUUID()}.pdf`, originalName: "registration.pdf", mimeType: "application/pdf", sizeBytes: 1234, sha256: "0".repeat(64) });
+
+export function regInput(over: Partial<RegistrationInput> = {}): RegistrationInput {
+  const tag = randomUUID().slice(0, 8);
+  const addr = { contactName: "Test Contact", line1: "10 Harbour Road", city: "Tel Aviv", countryCode: "IL", phone: undefined, line2: undefined, region: undefined, postalCode: undefined };
+  return {
+    legalName: `Test Trading ${tag} Ltd`, tradingName: undefined, countryCode: "IL", registrationNumber: `51-${tag}`, taxId: undefined,
+    businessType: "Distributor", website: undefined, businessEmail: `office-${tag}@testco.example`, businessPhone: "+972 3 555 0000",
+    expectedMonthlyVolume: undefined, contactName: "Test Contact", jobTitle: "Purchasing Manager", contactPhone: undefined,
+    email: `buyer-${tag}@testco.example`, password: "CorrectHorse12battery", billing: addr, shipping: addr, docTypes: ["VAT / tax registration certificate"],
+    acceptTerms: true, declareAuthorized: true, ...over,
+  };
+}
+
+let adminCache: Actor | null = null;
+export async function staff(roleKey = "SUPER_ADMIN"): Promise<Actor> {
+  if (roleKey === "SUPER_ADMIN" && adminCache) return adminCache;
+  const role = (await db.select().from(roles).where(eq(roles.key, roleKey)))[0];
+  const u = (await db.insert(users).values({ email: `${roleKey.toLowerCase()}-${randomUUID().slice(0, 6)}@staff.example`, fullName: `Staff ${roleKey}`, roleId: role.id, passwordHash: await hashPassword("StaffPassword123") }).returning())[0];
+  const a = (await loadActorByUserId(u.id))!;
+  if (roleKey === "SUPER_ADMIN") adminCache = a;
+  return a;
+}
+
+export async function approvedBuyer(over: Partial<RegistrationInput> = {}) {
+  const r = await registerBusiness(regInput(over), [fakeDoc()]);
+  await changeCompanyStatus(await staff(), r.companyId, "APPROVED", "");
+  const actor = (await loadActorByUserId(r.userId))! as Actor & { companyId: string };
+  const addrs = await db.select().from(addresses).where(eq(addresses.companyId, r.companyId));
+  return { actor, ...r, shippingAddressId: addrs.find((a) => a.kind === "SHIPPING")!.id, billingAddressId: addrs.find((a) => a.kind === "BILLING")!.id };
+}
+
+/** In-memory PayPal sandbox double. Records calls; behaviour is configurable per test. */
+export class FakePayPal implements PayPalGateway {
+  orders = new Map<string, { amount: { currency_code: string; value: string }; customId: string; status: string }>();
+  requestIds = new Map<string, string>();
+  captureBehaviour: "COMPLETED" | "PENDING" | "DECLINED" | "INSTRUMENT_DECLINED" | "WRONG_AMOUNT" = "COMPLETED";
+  verify = true;
+  refundStatus: PayPalRefund["status"] = "COMPLETED";
+  calls: string[] = [];
+  isConfigured() { return true; }
+  async createOrder(a: Parameters<PayPalGateway["createOrder"]>[0]): Promise<PayPalOrder> {
+    this.calls.push("create");
+    const existing = this.requestIds.get(a.requestId);
+    if (existing) return { id: existing, status: "CREATED" };
+    const id = `PPO${randomUUID().replace(/-/g, "").slice(0, 14).toUpperCase()}`;
+    this.orders.set(id, { amount: a.amount, customId: a.customId, status: "CREATED" });
+    this.requestIds.set(a.requestId, id);
+    return { id, status: "CREATED" };
+  }
+  async getOrder(id: string): Promise<PayPalOrder> { return this.captured(id, "COMPLETED"); }
+  async captureOrder(id: string): Promise<PayPalOrder> {
+    this.calls.push("capture");
+    if (this.captureBehaviour === "INSTRUMENT_DECLINED") {
+      const { PayPalApiError } = await import("@/server/paypal");
+      throw new PayPalApiError(422, "INSTRUMENT_DECLINED", "Instrument declined");
+    }
+    return this.captured(id, this.captureBehaviour === "WRONG_AMOUNT" ? "COMPLETED" : this.captureBehaviour, this.captureBehaviour === "WRONG_AMOUNT");
+  }
+  private captured(id: string, status: string, wrong = false): PayPalOrder {
+    const o = this.orders.get(id)!;
+    return {
+      id, status: "COMPLETED", payer: { payer_id: "PAYERTEST01" },
+      purchase_units: [{ payments: { captures: [{ id: `CAP-${id}`, status: status as "COMPLETED", custom_id: o.customId, amount: wrong ? { ...o.amount, value: "1.00" } : o.amount, supplementary_data: { related_ids: { order_id: id } } }] } }],
+    };
+  }
+  async refundCapture(_c: string, a: { requestId: string; amount: { currency_code: string; value: string } }): Promise<PayPalRefund> {
+    this.calls.push("refund");
+    return { id: `RF-${a.requestId.slice(-10)}`, status: this.refundStatus, amount: a.amount };
+  }
+  async verifyWebhook() { return this.verify; }
+}
+
+export function installFakePayPal() { const f = new FakePayPal(); setPayPalGateway(f); return f; }

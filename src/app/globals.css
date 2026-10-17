@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-paper text-steel antialiased; font-feature-settings: "kern"; font-size: 15px; line-height: 1.55; }
+  h1, h2, h3, h4 { @apply text-deep-900; text-wrap: balance; }
+  :focus-visible { outline: 2px solid #1B4479; outline-offset: 2px; }
+  ::selection { background: #FCF3D2; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+}
+
+@layer components {
+  /* Wide-set stencil headings — the brand's typographic signature */
+  .display { font-stretch: 125%; font-weight: 800; letter-spacing: -0.01em; line-height: 1.02; }
+  .wide { font-stretch: 115%; font-weight: 700; letter-spacing: 0; }
+  .num { font-variant-numeric: tabular-nums lining-nums; }
+  .container-page { @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8; }
+  .prose-body p { @apply mb-4 max-w-[68ch]; }
+  .prose-body h2 { @apply wide mt-10 mb-3 text-xl; }
+  .prose-body h3 { @apply mt-6 mb-2 font-semibold text-deep-900; }
+  .prose-body ul { @apply mb-4 ml-5 list-disc max-w-[68ch] space-y-1; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-tag text-deep-900 hover:bg-tag-dark; }
+  .btn-deep { @apply btn bg-deep text-white hover:bg-deep-800; }
+  .btn-outline { @apply btn border border-line-strong bg-white text-deep-900 hover:border-deep hover:bg-deep-50; }
+  .btn-ghost { @apply btn text-deep-700 hover:bg-deep-50; }
+  .btn-danger { @apply btn border border-bad/40 bg-white text-bad hover:bg-bad-soft; }
+  .btn-sm { @apply px-3 py-1.5 text-[13px]; }
+
+  .field-label { @apply mb-1 block text-[13px] font-semibold text-steel; }
+  .field-hint { @apply mt-1 text-xs text-steel-500; }
+  .input { @apply block w-full rounded border border-line-strong bg-white px-3 py-2 text-sm text-steel placeholder:text-steel-400 focus:border-deep focus:outline-none focus:ring-2 focus:ring-deep/20 disabled:bg-paper; }
+  .panel { @apply rounded-md border border-line bg-white; }
+  .panel-pad { @apply p-5 sm:p-6; }
+  .link { @apply font-medium text-deep-600 underline decoration-deep-200 underline-offset-2 hover:decoration-deep-600; }
+
+  .tbl { @apply w-full text-left text-sm; }
+  .tbl th { @apply border-b border-line px-3 py-2 text-xs font-semibold text-steel-500; }
+  .tbl td { @apply border-b border-line/70 px-3 py-2.5 align-top; }
+  .tbl tr:last-child td { @apply border-b-0; }
+}

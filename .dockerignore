@@ -1,0 +1,7 @@
+node_modules
+.next
+.env
+uploads/*
+.test-uploads
+coverage
+.git

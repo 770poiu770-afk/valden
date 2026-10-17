@@ -1,0 +1,50 @@
+{
+  "name": "valden-b2b",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "catalog:generate": "tsx scripts/generate-catalog.ts",
+    "catalog:import": "tsx scripts/import-catalog.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "test": "vitest run",
+    "test:e2e": "tsx scripts/e2e-smoke.ts",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "bcryptjs": "^2.4.3",
+    "drizzle-orm": "^0.45.4",
+    "next": "^15.5.28",
+    "nodemailer": "^6.10.1",
+    "papaparse": "^5.7.0",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.20.5",
+    "@types/nodemailer": "^8.0.2",
+    "@types/papaparse": "^5.5.2",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.1",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.28",
+    "postcss": "^8.5.30",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
