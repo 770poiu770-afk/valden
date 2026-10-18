@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "release": "tsx scripts/release.ts",
     "catalog:generate": "tsx scripts/generate-catalog.ts",
     "catalog:import": "tsx scripts/import-catalog.ts",
     "admin:create": "tsx scripts/create-admin.ts",

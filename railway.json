@@ -6,7 +6,7 @@
   },
   "deploy": {
     "preDeployCommand": [
-      "npx tsx scripts/migrate.ts"
+      "npx tsx scripts/release.ts"
     ],
     "startCommand": "/bin/sh -c \"exec npx next start -H 0.0.0.0 -p ${PORT:-3000}\"",
     "healthcheckPath": "/api/health",
