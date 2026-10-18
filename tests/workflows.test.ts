@@ -656,6 +656,30 @@ describe("misc", () => {
     process.env.PAYPAL_WEBHOOK_ID = "WH-TEST";
     expect(await g.verifyWebhook({ ...WH, certUrl: "https://evil.example.com/cert.pem" }, {})).toBe(false);
     if (prev === undefined) delete process.env.PAYPAL_WEBHOOK_ID; else process.env.PAYPAL_WEBHOOK_ID = prev;
-    expect(g.isConfigured()).toBe(!!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET));
+    const { paypalCredentials } = await import("@/server/paypal");
+    expect(g.isConfigured()).toBe(!!(paypalCredentials().clientId && paypalCredentials().clientSecret));
+  });
+  it("keeps Sandbox and Live PayPal keys separate (Live never falls back to Sandbox keys)", async () => {
+    const { paypalCredentials, paypalMode, paypalVarNames, paypalPublicConfig, HttpPayPalGateway } = await import("@/server/paypal");
+    const keys = ["PAYPAL_ENV", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "PAYPAL_SANDBOX_CLIENT_ID", "PAYPAL_SANDBOX_CLIENT_SECRET", "PAYPAL_SANDBOX_WEBHOOK_ID", "PAYPAL_LIVE_CLIENT_ID", "PAYPAL_LIVE_CLIENT_SECRET", "PAYPAL_LIVE_WEBHOOK_ID"];
+    const prev = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+    try {
+      for (const k of keys) delete process.env[k];
+      Object.assign(process.env, { PAYPAL_SANDBOX_CLIENT_ID: "sb-id", PAYPAL_SANDBOX_CLIENT_SECRET: "sb-secret", PAYPAL_SANDBOX_WEBHOOK_ID: "sb-wh", PAYPAL_CLIENT_ID: "legacy-id", PAYPAL_CLIENT_SECRET: "legacy-secret" });
+      expect(paypalMode()).toBe("sandbox");
+      expect(paypalCredentials()).toEqual({ clientId: "sb-id", clientSecret: "sb-secret", webhookId: "sb-wh" }); // prefixed wins over legacy
+      expect(paypalPublicConfig()).toEqual({ clientId: "sb-id", env: "sandbox" }); // the browser gets the Client ID only
+      expect(JSON.stringify(paypalPublicConfig())).not.toContain("secret");
+      process.env.PAYPAL_ENV = "live";
+      expect(paypalVarNames()).toEqual({ clientId: "PAYPAL_LIVE_CLIENT_ID", clientSecret: "PAYPAL_LIVE_CLIENT_SECRET", webhookId: "PAYPAL_LIVE_WEBHOOK_ID" });
+      expect(paypalCredentials()).toEqual({ clientId: null, clientSecret: null, webhookId: null }); // no Sandbox/legacy fallback in Live
+      expect(new HttpPayPalGateway().isConfigured()).toBe(false);
+      Object.assign(process.env, { PAYPAL_LIVE_CLIENT_ID: "live-id", PAYPAL_LIVE_CLIENT_SECRET: "live-secret", PAYPAL_LIVE_WEBHOOK_ID: "live-wh" });
+      expect(paypalCredentials()).toEqual({ clientId: "live-id", clientSecret: "live-secret", webhookId: "live-wh" });
+      process.env.PAYPAL_ENV = "Live"; // anything but exactly "live" stays Sandbox
+      expect(paypalMode()).toBe("sandbox");
+    } finally {
+      for (const k of keys) { if (prev[k] === undefined) delete process.env[k]; else process.env[k] = prev[k]; }
+    }
   });
 });

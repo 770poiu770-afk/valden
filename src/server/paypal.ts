@@ -37,26 +37,50 @@ export interface PayPalGateway {
   verifyWebhook(headers: WebhookHeaders, event: unknown): Promise<boolean>;
 }
 
-const BASE = () => (process.env.PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com");
+/** "live" only when PAYPAL_ENV is exactly "live"; anything else is Sandbox. */
+export function paypalMode(): "live" | "sandbox" { return process.env.PAYPAL_ENV === "live" ? "live" : "sandbox"; }
+
+/**
+ * Sandbox and Live keys live in separate variables, so switching PAYPAL_ENV can never pair Live mode
+ * with Sandbox keys (or the reverse):
+ *   sandbox → PAYPAL_SANDBOX_CLIENT_ID / PAYPAL_SANDBOX_CLIENT_SECRET / PAYPAL_SANDBOX_WEBHOOK_ID
+ *             (the older un-prefixed PAYPAL_CLIENT_ID / _CLIENT_SECRET / _WEBHOOK_ID are accepted for Sandbox only)
+ *   live    → PAYPAL_LIVE_CLIENT_ID / PAYPAL_LIVE_CLIENT_SECRET / PAYPAL_LIVE_WEBHOOK_ID (no fallback)
+ */
+export function paypalVarNames() {
+  const p = paypalMode() === "live" ? "PAYPAL_LIVE_" : "PAYPAL_SANDBOX_";
+  return { clientId: `${p}CLIENT_ID`, clientSecret: `${p}CLIENT_SECRET`, webhookId: `${p}WEBHOOK_ID` };
+}
+export function paypalCredentials() {
+  const live = paypalMode() === "live";
+  const n = paypalVarNames();
+  const get = (name: string, legacy: string) => (process.env[name] || (live ? "" : process.env[legacy] || "")).trim() || null;
+  return { clientId: get(n.clientId, "PAYPAL_CLIENT_ID"), clientSecret: get(n.clientSecret, "PAYPAL_CLIENT_SECRET"), webhookId: get(n.webhookId, "PAYPAL_WEBHOOK_ID") };
+}
+
+const BASE = () => (paypalMode() === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com");
 
 export class HttpPayPalGateway implements PayPalGateway {
-  private token: { value: string; exp: number } | null = null;
+  private token: { value: string; exp: number; mode: string } | null = null;
 
   isConfigured() {
-    return !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+    const c = paypalCredentials();
+    return !!(c.clientId && c.clientSecret);
   }
 
   private async accessToken(): Promise<string> {
-    if (this.token && this.token.exp > Date.now() + 60_000) return this.token.value;
+    const mode = paypalMode();
+    if (this.token && this.token.mode === mode && this.token.exp > Date.now() + 60_000) return this.token.value;
     if (!this.isConfigured()) throw new PayPalApiError(503, "NOT_CONFIGURED", "PayPal credentials are not configured.");
-    const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString("base64");
+    const c = paypalCredentials();
+    const auth = Buffer.from(`${c.clientId}:${c.clientSecret}`).toString("base64");
     const res = await fetch(`${BASE()}/v1/oauth2/token`, {
       method: "POST", headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
       body: "grant_type=client_credentials", cache: "no-store", signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) throw new PayPalApiError(res.status, "AUTH_FAILED", "PayPal authentication failed.");
     const j = (await res.json()) as { access_token: string; expires_in: number };
-    this.token = { value: j.access_token, exp: Date.now() + j.expires_in * 1000 };
+    this.token = { value: j.access_token, exp: Date.now() + j.expires_in * 1000, mode };
     return j.access_token;
   }
 
@@ -91,7 +115,7 @@ export class HttpPayPalGateway implements PayPalGateway {
     return this.call<PayPalRefund>("POST", `/v2/payments/captures/${encodeURIComponent(captureId)}/refund`, { amount: a.amount, invoice_id: a.invoiceId, note_to_payer: a.note.slice(0, 255) }, { "PayPal-Request-Id": a.requestId });
   }
   async verifyWebhook(h: WebhookHeaders, event: unknown) {
-    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+    const webhookId = paypalCredentials().webhookId;
     if (!webhookId) { log.error("paypal_webhook_id_missing"); return false; }
     if (!/^https:\/\/api(-m)?\.(sandbox\.)?paypal\.com\//.test(h.certUrl)) return false; // only trust PayPal-hosted certs
     const r = await this.call<{ verification_status: string }>("POST", "/v1/notifications/verify-webhook-signature", {
@@ -106,5 +130,5 @@ let gateway: PayPalGateway = new HttpPayPalGateway();
 export function paypal(): PayPalGateway { return gateway; }
 export function setPayPalGateway(g: PayPalGateway) { gateway = g; }
 export function paypalPublicConfig() {
-  return { clientId: process.env.PAYPAL_CLIENT_ID || null, env: process.env.PAYPAL_ENV === "live" ? "live" : "sandbox" };
+  return { clientId: paypalCredentials().clientId, env: paypalMode() };
 }

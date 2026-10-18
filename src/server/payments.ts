@@ -9,7 +9,7 @@ import { decimalStringToMinor, formatMoney, minorToDecimalString, toBig } from "
 import { getSettings } from "@/lib/settings";
 import { log } from "@/lib/log";
 import { loadOrderFor, paypalCapExceeded } from "./orders";
-import { paypal, PayPalApiError, type PayPalCapture, type PayPalOrder, type PayPalRefund, type WebhookHeaders } from "./paypal";
+import { paypal, paypalMode, PayPalApiError, type PayPalCapture, type PayPalOrder, type PayPalRefund, type WebhookHeaders } from "./paypal";
 
 
 type PaymentRow = typeof payments.$inferSelect;
@@ -28,7 +28,7 @@ export async function startPayPalPayment(actor: Actor, orderId: string): Promise
   const s = await getSettings();
   if (!s.payments.paypalEnabled) throw badRequest("PayPal payments are currently disabled.");
   if (!paypal().isConfigured()) throw new AppError(503, "PayPal is not configured for this environment yet. Please choose bank transfer or contact the trade desk.", "PAYPAL_NOT_CONFIGURED");
-  if (process.env.PAYPAL_ENV === "live" && process.env.ALLOW_SAMPLE_DATA === "true") {
+  if (paypalMode() === "live" && process.env.ALLOW_SAMPLE_DATA === "true") {
     // Safety: never take real money while sample prices/rates are allowed.
     log.error("paypal_live_with_sample_data_blocked", { orderId });
     throw new AppError(503, "Payments are temporarily unavailable. Please contact the trade desk.", "LIVE_WITH_SAMPLE_DATA");

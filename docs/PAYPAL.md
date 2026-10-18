@@ -50,24 +50,33 @@ Handled webhook events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, 
 
 ## Environment variables (Railway → project `valden` → service `web` → Variables)
 
-| Variable | Staging (environment `staging`) | Live (separate environment, e.g. `production`) |
+`PAYPAL_ENV` picks the key set. Sandbox and Live keys have **different variable names**, so changing
+`PAYPAL_ENV` can never pair Live mode with Sandbox keys (Live has no fallback).
+
+| Variable | Sandbox (testing) | Live (real money) |
 |---|---|---|
 | `PAYPAL_ENV` | `sandbox` (already set) | `live` |
-| `PAYPAL_CLIENT_ID` | Sandbox app Client ID | Live app Client ID |
-| `PAYPAL_CLIENT_SECRET` | Sandbox app Secret | Live app Secret |
-| `PAYPAL_WEBHOOK_ID` | ID of the sandbox webhook | ID of the live webhook |
-| `ALLOW_SAMPLE_DATA` | `true` (sample catalog) | **must not be set** — live PayPal is refused while it is `true` |
+| `PAYPAL_SANDBOX_CLIENT_ID` | Sandbox app Client ID | — |
+| `PAYPAL_SANDBOX_CLIENT_SECRET` | Sandbox app Secret | — |
+| `PAYPAL_SANDBOX_WEBHOOK_ID` | Sandbox webhook ID | — |
+| `PAYPAL_LIVE_CLIENT_ID` | — | Live app Client ID |
+| `PAYPAL_LIVE_CLIENT_SECRET` | — | Live app Secret |
+| `PAYPAL_LIVE_WEBHOOK_ID` | — | Live webhook ID |
+| `ALLOW_SAMPLE_DATA` | `true` (sample catalog) | **must be removed** — Live PayPal is refused while it is `true` |
 
-Secrets are typed directly into Railway Variables — never into chat, code, GitHub or the browser.
-Only the Client ID is sent to the browser (PayPal's button script needs it).
+The older un-prefixed `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` / `PAYPAL_WEBHOOK_ID` are still read,
+but for Sandbox only. Secrets are typed directly into Railway Variables — never into chat, code,
+GitHub or the browser. Only the Client ID is sent to the browser (PayPal's button script needs it).
+Admin › Overview shows the current mode and names any missing variable.
 
 ## Sandbox setup
 
 1. developer.paypal.com → **Apps & Credentials** → toggle **Sandbox** → **Create App** (Merchant).
-   Copy the **Client ID** and **Secret** into Railway (`staging` → `web` → Variables).
+   Copy the **Client ID** and **Secret** into Railway (`staging` → `web` → Variables) as
+   `PAYPAL_SANDBOX_CLIENT_ID` and `PAYPAL_SANDBOX_CLIENT_SECRET`.
 2. In the app → **Webhooks** → **Add Webhook**: URL `https://web-staging-58453.up.railway.app/api/webhooks/paypal`,
-   events: the list above (or "All events"). Copy the **Webhook ID** into `PAYPAL_WEBHOOK_ID`.
-3. Railway redeploys automatically after variables change (or press **Deploy**).
+   events: the list above (or "All events"). Copy the **Webhook ID** into `PAYPAL_SANDBOX_WEBHOOK_ID`.
+3. Railway shows the variable changes as staged — press **Deploy** to apply them.
 4. Test with the sandbox **personal** account (developer.paypal.com → **Testing Tools → Sandbox Accounts**):
    place an order with Standard delivery + PayPal, pay, and check the order shows **Paid**;
    start another payment and press **Cancel** in PayPal — the order must stay **Awaiting payment**.
@@ -75,11 +84,14 @@ Only the Client ID is sent to the browser (PayPal's button script needs it).
 ## Going live (only after the sandbox test passes)
 
 1. A verified **PayPal Business** account. developer.paypal.com → **Apps & Credentials** → toggle
-   **Live** → **Create App** → copy Live **Client ID** and **Secret**.
-2. Create a separate Railway environment (e.g. `production`) so staging keeps using Sandbox; set the
-   Live variables from the table above there, without `ALLOW_SAMPLE_DATA`.
-3. Live app → **Webhooks** → URL `https://<live-domain>/api/webhooks/paypal` → `PAYPAL_WEBHOOK_ID`.
-4. Load real prices and exchange rates (live payments are refused against sample data).
+   **Live** → **Create App** → copy Live **Client ID** and **Secret** into `PAYPAL_LIVE_CLIENT_ID` and
+   `PAYPAL_LIVE_CLIENT_SECRET`.
+2. Live app → **Webhooks** → URL `https://<site-domain>/api/webhooks/paypal` → `PAYPAL_LIVE_WEBHOOK_ID`.
+3. Load real prices and exchange rates and mark real products as purchasable, then **remove**
+   `ALLOW_SAMPLE_DATA` (live payments are refused against sample data, and sample listings stop being
+   orderable once it is removed).
+4. Set `PAYPAL_ENV=live` and deploy. Recommended: do this in a separate Railway environment
+   (e.g. `production`) so `staging` keeps testing with Sandbox.
 5. One small real payment and a refund, reconciled in PayPal's activity report, before opening to buyers.
 
 ## Limitations
