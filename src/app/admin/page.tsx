@@ -31,6 +31,14 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       {(await searchParams).denied && <Notice tone="bad">Your role does not include access to that page.</Notice>}
       <div className="space-y-2">
         {!paypal().isConfigured() && <Notice tone="warn" title="PayPal is not configured">Set PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET and PAYPAL_WEBHOOK_ID. Until then, buyers can only pay by bank transfer.</Notice>}
+        {paypal().isConfigured() && (
+          <Notice tone={process.env.PAYPAL_ENV === "live" ? "warn" : "info"} title={process.env.PAYPAL_ENV === "live" ? "PayPal mode: LIVE — real payments" : "PayPal mode: Sandbox — test payments only"}>
+            {process.env.PAYPAL_ENV === "live"
+              ? (process.env.ALLOW_SAMPLE_DATA === "true" ? "PayPal checkout is blocked because ALLOW_SAMPLE_DATA is set. Remove it before taking real payments." : "Payments are charged to real buyer accounts.")
+              : "No real money is charged. Use PayPal sandbox buyer accounts to test."}
+          </Notice>
+        )}
+        {paypal().isConfigured() && !process.env.PAYPAL_WEBHOOK_ID && <Notice tone="bad" title="PAYPAL_WEBHOOK_ID is missing">Every PayPal webhook will be rejected, so refunds made in PayPal, pending payments and disputes will not update orders. Add the Webhook ID from the same PayPal app.</Notice>}
         {sampleFx && <Notice tone="warn" title="Sample exchange rates in use">Record verified rates in <Link className="link" href="/admin/settings">Settings</Link>. Production refuses non-USD checkout on sample rates.</Notice>}
         {flags.sample > 0 && <Notice tone="info" title={`${flags.sample} products still use sample reference prices`}>Replace them with verified benchmarks via <Link className="link" href="/admin/pricing">Pricing</Link> (CSV import) before launch. {flags.active} products are activated for sale.</Notice>}
       </div>
