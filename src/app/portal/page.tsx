@@ -89,7 +89,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <section>
         <div className="mb-3 flex items-center justify-between"><h2 className="wide text-lg">Recent orders</h2><Link className="link text-sm" href="/portal/orders">All orders</Link></div>
         {recent.length === 0 ? <Empty title="No orders yet" action={<Link className="btn-deep" href="/catalog">Start an order</Link>}>Add products from the catalog or paste a SKU list into the bulk order builder.</Empty> : (
-          <div className="panel overflow-x-auto">
+          <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
             <table className="tbl"><thead><tr><th>Order</th><th>Placed</th><th>Status</th><th>Payment</th><th className="text-right">Total</th></tr></thead>
               <tbody>{recent.map((o) => (
                 <tr key={o.id}><td><Link className="link" href={`/portal/orders/${o.id}`}>{o.number}</Link></td><td>{fmtDate(o.placedAt)}</td><td><StatusPill status={o.status} /></td><td><StatusPill status={o.paymentStatus} /></td><td className="text-right"><Money cents={o.totalCents} currency={o.currency} /></td></tr>

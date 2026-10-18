@@ -3,7 +3,7 @@ import { Logo } from "./Brand";
 import { currentActor } from "@/server/http";
 import { cartCount } from "@/server/cart";
 import { companyInfo } from "@/lib/company";
-import { CATEGORIES } from "@/lib/catalog-meta";
+import { DEPARTMENTS } from "@/lib/catalog-meta";
 
 const NAV = [
   { href: "/catalog", label: "Catalog" },
@@ -42,13 +42,14 @@ export async function SiteHeader() {
                 <span className="hidden sm:inline">Cart</span><span className="sm:hidden" aria-hidden>Cart</span> <span className="num rounded-sm bg-deep px-1.5 text-xs text-white">{count}</span>
               </Link>
             )}
-            <Link href="/portal" className="btn-deep btn-sm"><span className="hidden sm:inline">My account</span><span className="sm:hidden">Account</span></Link>
+            <Link href="/portal" className="btn-deep btn-sm hidden sm:inline-flex">My account</Link>
           </>)}
           <details className="relative lg:hidden">
             <summary className="btn-ghost btn-sm cursor-pointer list-none px-2" aria-label="Menu">Menu</summary>
             <div className="absolute right-0 z-30 mt-2 w-60 rounded-md border border-line bg-white p-2 shadow-lg">
               {NAV.map((n) => <Link key={n.href} href={n.href} className="block rounded px-3 py-2 text-sm hover:bg-paper">{n.label}</Link>)}
               {!actor && <Link href="/login" className="block rounded px-3 py-2 text-sm hover:bg-paper">Sign in</Link>}
+              {actor && !actor.isStaff && <Link href="/portal" className="block rounded px-3 py-2 text-sm font-semibold hover:bg-paper">My account</Link>}
             </div>
           </details>
         </div>
@@ -72,9 +73,9 @@ export function SiteFooter() {
             {c.phone && <p>{c.phone}</p>}
           </div>
         </div>
-        <FooterCol title="Catalog" links={CATEGORIES.slice(0, 7).map((x) => [`/catalog?category=${x.slug}`, x.name])} />
+        <FooterCol title="Departments" links={DEPARTMENTS.map((x) => [`/catalog?dept=${x.slug}`, x.name])} />
         <FooterCol title="Trade" links={[["/register", "Register a business"], ["/login", "Sign in"], ["/quote", "Request a quote"], ["/services", "Wholesale services"], ["/faq", "FAQ"], ["/contact", "Contact the trade desk"]]} />
-        <FooterCol title="Policies" links={[["/policies/shipping", "Shipping policy"], ["/policies/returns", "Returns & refunds"], ["/terms", "Terms of trade"], ["/privacy", "Privacy policy"], ["/about", "About Valden"]]} />
+        <FooterCol title="Policies" links={[["/policies/shipping", "Shipping policy"], ["/policies/returns", "Returns & refunds"], ["/terms", "Terms of trade"], ["/privacy", "Privacy policy"], ["/accessibility", "Accessibility statement"], ["/about", "About Valden"]]} />
       </div>
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-deep-200 sm:flex-row sm:justify-between">

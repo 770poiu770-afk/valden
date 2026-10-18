@@ -39,7 +39,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
             </li>
           ))}
         </ul>
-        <div className="panel hidden overflow-x-auto md:block">
+        <div className="panel hidden overflow-x-auto md:block" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="tbl min-w-[640px]">
             <thead><tr><th>Product</th><th className="text-right">Unit</th><th className="text-right">Quantity</th><th className="text-right">Line total</th></tr></thead>
             <tbody>

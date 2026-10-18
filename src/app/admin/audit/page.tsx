@@ -17,7 +17,7 @@ export default async function Audit({ searchParams }: { searchParams: Promise<{ 
     <div>
       <PageHeader title="Audit log" intro="Append-only record of sensitive actions: approvals, pricing, payments, refunds, role changes and sign-ins." />
       <form className="mb-4 flex flex-wrap gap-2"><input name="action" defaultValue={sp.action} placeholder="Action contains" className="input w-48" /><input name="actor" defaultValue={sp.actor} placeholder="Actor email" className="input w-56" /><input name="entity" defaultValue={sp.entity} placeholder="Entity ID" className="input w-72" /><button className="btn-deep">Filter</button></form>
-      <div className="panel overflow-x-auto"><table className="tbl min-w-[1000px]"><thead><tr><th>Time</th><th>Action</th><th>Actor</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[1000px]"><thead><tr><th>Time</th><th>Action</th><th>Actor</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
         <tbody>{rows.map((r) => <tr key={r.id}><td className="whitespace-nowrap text-xs">{fmtDate(r.createdAt, true)}</td><td className="font-medium">{r.action}</td><td className="text-xs">{r.actorEmail ?? "system"}</td><td className="num text-xs">{r.entityType}<br />{r.entityId}</td><td className="max-w-md truncate text-xs text-steel-500" title={JSON.stringify(r.details)}>{JSON.stringify(r.details)}</td><td className="text-xs">{r.ip}</td></tr>)}</tbody></table></div>
     </div>
   );

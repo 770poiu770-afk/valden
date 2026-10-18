@@ -8,7 +8,7 @@ export const addrLines = (a: AddressSnapshot) => [a.companyName, a.contactName, 
 export function OrderItemsTable({ b }: { b: Bundle }) {
   const o = b.order;
   return (
-    <div className="panel overflow-x-auto">
+    <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
       <table className="tbl min-w-[640px]">
         <thead><tr><th>SKU</th><th>Description</th><th className="text-right">Qty</th><th className="text-right">Unit</th><th className="text-right">Line total</th></tr></thead>
         <tbody>{b.items.map((i) => (

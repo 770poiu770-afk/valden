@@ -57,7 +57,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       {a.permissions.has("audit.view") && (
         <section>
           <div className="mb-3 flex items-center justify-between"><h2 className="wide text-lg">Recent activity</h2><Link className="link text-sm" href="/admin/audit">Audit log</Link></div>
-          <div className="panel overflow-x-auto"><table className="tbl"><tbody>{recent.map((r) => <tr key={r.id}><td className="whitespace-nowrap text-xs text-steel-500">{fmtDate(r.createdAt, true)}</td><td className="font-medium">{r.action}</td><td>{r.actorEmail ?? "system"}</td><td className="text-xs text-steel-500">{r.entityType} {r.entityId?.slice(0, 8)}</td></tr>)}</tbody></table></div>
+          <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl"><tbody>{recent.map((r) => <tr key={r.id}><td className="whitespace-nowrap text-xs text-steel-500">{fmtDate(r.createdAt, true)}</td><td className="font-medium">{r.action}</td><td>{r.actorEmail ?? "system"}</td><td className="text-xs text-steel-500">{r.entityType} {r.entityId?.slice(0, 8)}</td></tr>)}</tbody></table></div>
         </section>
       )}
     </div>

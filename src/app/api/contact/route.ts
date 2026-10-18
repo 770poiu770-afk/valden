@@ -6,7 +6,7 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 
 const Body = z.object({
   name: z.string().trim().min(2).max(120), companyName: z.string().trim().min(2).max(200), email: z.string().trim().email().max(200),
-  phone: z.string().trim().max(40).optional(), topic: z.enum(["Trade account", "Quote request", "Order support", "Logistics", "Partnership", "Other"]),
+  phone: z.string().trim().max(40).optional(), topic: z.enum(["Trade account", "Quote request", "Order support", "Logistics", "Accessibility", "Partnership", "Other"]),
   message: z.string().trim().min(10).max(5000), website: z.string().max(0).optional(), // honeypot
 });
 

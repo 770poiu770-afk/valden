@@ -2,8 +2,21 @@
 
 ## The sample catalog
 
-`data/catalog.json` contains 337 listings and 748 SKUs across 14 categories. It is generated from
-typed definitions in `scripts/catalog/*.ts` (`npm run catalog:generate`).
+`data/catalog.json` contains 387 listings and 826 SKUs across 18 categories, grouped into six
+shopping departments (defined in `src/lib/catalog-meta.ts` → `DEPARTMENTS`):
+
+| Department | Categories |
+| --- | --- |
+| Phones | Apple iPhone; Samsung Galaxy Ultra & Foldables |
+| Computers | Laptops; Workstations; Tablets; Monitors; CPUs & Motherboards; Memory & Storage; Components & Accessories; Networking; Streaming & Creator Equipment |
+| Headphones & Speakers | Headphones & Speakers |
+| Gaming | Consoles & Handhelds; Gaming Desktops; Build-to-Order PCs; Graphics Cards |
+| Smartwatches | Smartwatches |
+| Chargers | Chargers & Power |
+
+The catalog is generated from typed definitions in `scripts/catalog/*.ts` (`npm run catalog:generate`).
+On each Railway deploy, `scripts/release.ts` adds listings that are new in `data/catalog.json`;
+listings already in the database are never modified by a deploy.
 
 - **Reference prices are sample estimates**, approximating publicly known launch prices as of mid-2026.
   They are flagged `referenceIsSample = true` and must be replaced with verified benchmarks.

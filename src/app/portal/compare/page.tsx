@@ -24,7 +24,7 @@ export default async function Compare({ searchParams }: { searchParams: Promise<
   return (
     <div>
       <PageHeader title="Compare products" />
-      <div className="panel overflow-x-auto">
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
         <table className="tbl min-w-[720px]">
           <thead><tr><th className="w-48" />{ordered.map((p) => <th key={p.id} className="align-top"><ProductArt kind={p.imageKey} className="mb-2 aspect-[4/3] w-full max-w-[180px] rounded-sm" /><Link className="text-sm font-semibold text-deep-900 hover:underline" href={`/products/${p.slug}`}>{p.name}</Link></th>)}</tr></thead>
           <tbody>

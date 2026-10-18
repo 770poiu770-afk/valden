@@ -25,7 +25,7 @@ export default async function AdminQuote({ params }: { params: Promise<{ id: str
         actions={q.status === "SUBMITTED" ? <ActionButton action={`/api/admin/quotes/${q.id}/review`} label="Mark under review" /> : undefined} />
       <section className="panel panel-pad"><DL rows={[["Received", fmtDate(q.createdAt, true)], ["Buyer currency", q.currency], ["Buyer notes", q.buyerNotes], ["Offer expires", q.offerExpiresAt ? fmtDate(q.offerExpiresAt, true) : null], ["Converted order", q.orderId ? <Link key="o" className="link" href={`/admin/orders/${q.orderId}`}>View order</Link> : null]]} /></section>
       <ActionForm action={`/api/admin/quotes/${q.id}/offer`} className="space-y-4" submitLabel={canOffer ? (q.status === "OFFERED" ? "Re-issue offer" : "Issue offer") : undefined} confirm="Send this offer to the buyer?">
-        <div className="panel overflow-x-auto"><table className="tbl min-w-[900px]">
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[900px]">
           <thead><tr><th>Product</th><th className="text-right">Qty</th><th className="text-right">Reference</th><th className="text-right">List (tier)</th><th className="text-right">Buyer target</th><th className="w-36 text-right">Offer unit (USD)</th><th className="w-48">Line note</th></tr></thead>
           <tbody>{items.map((i, idx) => (
             <tr key={i.id}>

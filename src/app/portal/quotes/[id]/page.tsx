@@ -36,7 +36,7 @@ export default async function QuotePage({ params, searchParams }: { params: Prom
       {q.status === "EXPIRED" && <Notice tone="warn">This offer has expired. <Link className="link" href="/contact?topic=Quote+request">Ask the trade desk</Link> to re-issue it.</Notice>}
       {offered && <Notice tone="info" title={`Offer valid until ${fmtDate(q.offerExpiresAt, true)}`}>{q.offerNotes ?? "Review the offered prices below and accept to place the order."}</Notice>}
 
-      <div className="panel overflow-x-auto">
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
         <table className="tbl min-w-[720px]">
           <thead><tr><th>Product</th><th className="text-right">Qty</th><th className="text-right">Your target</th><th className="text-right">List unit</th><th className="text-right">Offered unit</th><th className="text-right">Offered line</th></tr></thead>
           <tbody>{items.map((i) => (

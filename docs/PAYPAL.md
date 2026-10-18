@@ -22,6 +22,22 @@ Buyer places order ──► staff confirm (availability, freight, risk) ──�
 - Orders above **Settings › Payments › PayPal maximum** must be paid by bank transfer. Buyers can
   switch method while an order is unpaid.
 
+- **Cancellation:** when the buyer cancels or closes the PayPal window, the browser asks
+  `POST /api/orders/:id/paypal/cancel`. The server checks the order with PayPal first: only if PayPal
+  has not approved it is the attempt closed as `CANCELLED` (nothing charged, order still awaiting
+  payment). If PayPal says it *was* approved, the payment is captured and verified instead.
+- **Approved but not captured** (browser closed after approval): finance can press **Check with
+  PayPal** on the order page (Admin › Orders › order › Payments), which reconciles the attempt with
+  PayPal's record and captures it if needed.
+- **Double charges:** one open attempt per order; a new attempt is refused once a payment is pending or
+  completed; captures use a per-attempt `PayPal-Request-Id`; webhooks are processed once per event
+  ID. If a second capture ever arrives for an already-paid order it is logged as
+  `duplicate_payment_captured` and flagged on the order for refund.
+- **Safety switch:** with `PAYPAL_ENV=live` and `ALLOW_SAMPLE_DATA=true` at the same time, PayPal
+  checkout is refused, so real money can never be taken against sample prices or sample FX rates.
+- **Secrets:** `PAYPAL_CLIENT_SECRET` is read only on the server. The browser receives only the
+  public Client ID (needed by PayPal's button script). `.env` is git-ignored.
+
 Handled webhook events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, `.PENDING`,
 `.DENIED`, `.DECLINED`, `.REFUNDED`, `.REVERSED`, `CUSTOMER.DISPUTE.CREATED`, `.UPDATED`, `.RESOLVED`.
 
@@ -41,6 +57,22 @@ Handled webhook events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, 
 6. Use the webhook simulator in the developer dashboard to send a duplicate event and confirm the
    second delivery is recorded as `duplicate_ignored`.
 
+## Connecting your real PayPal Business account (later, after Sandbox testing passes)
+
+Do this only after the Sandbox test plan in `docs/RAILWAY.md` §6 passes completely.
+
+1. Open or upgrade to a **PayPal Business** account in the name of your registered company, and
+   complete PayPal's business verification (company documents, bank account, identity checks).
+2. At developer.paypal.com, sign in with that business account, switch **Apps & Credentials** to
+   **Live**, and create an app. Copy the live **Client ID** and **Secret**.
+3. Create a **separate Railway environment** (e.g. `production`) so staging keeps using Sandbox.
+   In that environment's `web` service **Variables**, enter yourself (never in chat or in GitHub):
+   `PAYPAL_ENV=live`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`. Remove `ALLOW_SAMPLE_DATA`.
+4. In the live app, add a webhook to `https://<your-live-domain>/api/webhooks/paypal` with the events
+   listed above, and set `PAYPAL_WEBHOOK_ID` to its ID.
+5. Load verified prices and real exchange rates, then run one small real payment and a refund, and
+   reconcile both in PayPal's activity report before inviting buyers.
+
 ## Production configuration
 
 1. Use a verified PayPal **Business** account in the country of your legal entity.
@@ -59,8 +91,9 @@ Handled webhook events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, 
 - Not every buyer can pay by card without a PayPal account; that depends on PayPal's rules for the
   buyer's country and your merchant configuration.
 - If a buyer approves a payment but closes the browser before capture, the payment stays `APPROVED`
-  (recorded from the `CHECKOUT.ORDER.APPROVED` webhook); the buyer can return and pay again. An
-  automatic server-side capture of approved-but-uncaptured orders is a possible enhancement.
+  (recorded from the `CHECKOUT.ORDER.APPROVED` webhook) until finance uses **Check with PayPal**,
+  or the buyer returns and cancels/retries. Automatic scheduled reconciliation is a possible
+  enhancement.
 
 ## What has and has not been tested
 

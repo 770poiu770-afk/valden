@@ -13,7 +13,29 @@ export const CATEGORIES = [
   { slug: "networking", name: "Enterprise Networking", imageKey: "switch", description: "Switching, wireless, security gateways and network storage." },
   { slug: "creator", name: "Streaming & Creator Equipment", imageKey: "camera", description: "Cinema cameras, live production, audio and lighting." },
   { slug: "components", name: "Components & Accessories", imageKey: "psu", description: "Power, cooling, enclosures, peripherals, docks and power protection." },
+  { slug: "audio", name: "Headphones & Speakers", imageKey: "headset", description: "Noise-cancelling headphones, earbuds, portable and home speakers, soundbars." },
+  { slug: "smartwatches", name: "Smartwatches", imageKey: "watch", description: "Apple Watch, Galaxy Watch, Pixel Watch and Garmin sports and outdoor watches." },
+  { slug: "chargers", name: "Chargers & Power", imageKey: "charger", description: "USB-C and GaN chargers, wireless chargers, power banks and charging cables." },
+  { slug: "consoles", name: "Consoles & Handhelds", imageKey: "console", description: "PlayStation, Xbox and Nintendo consoles, handheld gaming PCs, controllers and VR." },
 ] as const;
+
+/**
+ * Six shopping departments shown in navigation. Each groups one or more product categories;
+ * a category belongs to exactly one department.
+ */
+export const DEPARTMENTS = [
+  { slug: "phones", name: "Phones", nameHe: "טלפונים", imageKey: "phone", description: "iPhone and Samsung Galaxy flagships and foldables.", categories: ["iphone", "galaxy"] },
+  { slug: "computers", name: "Computers", nameHe: "מחשבים", imageKey: "laptop", description: "Laptops, workstations, tablets, monitors, components, networking and creator equipment.", categories: ["laptops", "workstations", "tablets", "monitors", "cpus-motherboards", "memory-storage", "components", "networking", "creator"] },
+  { slug: "audio", name: "Headphones & Speakers", nameHe: "אוזניות ורמקולים", imageKey: "headset", description: "Headphones, earbuds and speakers.", categories: ["audio"] },
+  { slug: "gaming", name: "Gaming", nameHe: "גיימינג", imageKey: "console", description: "Consoles, handhelds, gaming desktops and graphics cards.", categories: ["consoles", "gaming-desktops", "custom-gaming-pcs", "graphics-cards"] },
+  { slug: "smartwatches", name: "Smartwatches", nameHe: "שעונים חכמים", imageKey: "watch", description: "Smartwatches and sports watches.", categories: ["smartwatches"] },
+  { slug: "chargers", name: "Chargers", nameHe: "מטענים", imageKey: "charger", description: "Chargers, power banks and cables.", categories: ["chargers"] },
+] as const;
+
+export type DepartmentSlug = (typeof DEPARTMENTS)[number]["slug"];
+export function departmentOf(categorySlug: string) {
+  return DEPARTMENTS.find((d) => (d.categories as readonly string[]).includes(categorySlug));
+}
 
 export const AVAILABILITY_LABEL: Record<string, { label: string; tone: "ok" | "warn" | "info" | "muted" }> = {
   INDICATIVE_AVAILABLE: { label: "Indicative availability · confirm", tone: "ok" },

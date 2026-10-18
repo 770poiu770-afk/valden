@@ -13,7 +13,7 @@ export default async function Orders() {
     <div>
       <PageHeader title="Orders" intro="All orders placed by your company." />
       {list.length === 0 ? <Empty title="No orders yet" action={<Link href="/catalog" className="btn-deep">Browse catalog</Link>} /> : (
-        <div className="panel overflow-x-auto">
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="tbl min-w-[720px]">
             <thead><tr><th>Order</th><th>PO</th><th>Placed</th><th>Status</th><th>Payment</th><th className="text-right">Total</th></tr></thead>
             <tbody>{list.map((o) => (

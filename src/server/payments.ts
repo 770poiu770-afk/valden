@@ -28,6 +28,11 @@ export async function startPayPalPayment(actor: Actor, orderId: string): Promise
   const s = await getSettings();
   if (!s.payments.paypalEnabled) throw badRequest("PayPal payments are currently disabled.");
   if (!paypal().isConfigured()) throw new AppError(503, "PayPal is not configured for this environment yet. Please choose bank transfer or contact the trade desk.", "PAYPAL_NOT_CONFIGURED");
+  if (process.env.PAYPAL_ENV === "live" && process.env.ALLOW_SAMPLE_DATA === "true") {
+    // Safety: never take real money while sample prices/rates are allowed.
+    log.error("paypal_live_with_sample_data_blocked", { orderId });
+    throw new AppError(503, "Payments are temporarily unavailable. Please contact the trade desk.", "LIVE_WITH_SAMPLE_DATA");
+  }
 
   const prepared = await db.transaction(async (tx) => {
     const o = await loadOrderFor(actor, orderId, tx);
@@ -134,7 +139,11 @@ export async function applyCapture(tx: DbOrTx, paymentId: string, capture: PayPa
       await orderEvent(tx, order.id, "PAID", `Payment of ${formatMoney(payment.amountCents, payment.currency)} received via PayPal and verified.`);
     } else {
       await tx.update(orders).set({ paymentStatus: "PAID", updatedAt: new Date() }).where(eq(orders.id, order.id));
-      await orderEvent(tx, order.id, "PAYMENT_ON_CLOSED_ORDER", `Payment captured while order was ${order.status}. Refund or reinstatement required.`, false);
+      const dup = order.paymentStatus === "PAID" || ["PAID", "PROCESSING", "PARTIALLY_SHIPPED", "SHIPPED", "DELIVERED"].includes(order.status);
+      await orderEvent(tx, order.id, dup ? "DUPLICATE_PAYMENT" : "PAYMENT_ON_CLOSED_ORDER", dup
+        ? `A second payment (capture ${capture.id}) was received for an order that was already paid. Refund this capture.`
+        : `Payment captured while order was ${order.status}. Refund or reinstatement required.`, false);
+      log.error(dup ? "duplicate_payment_captured" : "payment_on_closed_order", { orderId: order.id, paymentId: payment.id });
     }
     await audit(null, "payment.captured", "payment", payment.id, { orderId: order.id, captureId: capture.id, source });
     return "COMPLETED";
@@ -152,6 +161,62 @@ export async function applyCapture(tx: DbOrTx, paymentId: string, capture: PayPa
   await tx.update(orders).set({ paymentStatus: "FAILED", updatedAt: new Date() }).where(eq(orders.id, order.id));
   await orderEvent(tx, order.id, "PAYMENT_FAILED", "PayPal declined the payment. No funds were collected. You may retry or choose bank transfer.");
   return "FAILED";
+}
+
+/**
+ * The buyer closed or cancelled the PayPal window. The browser's word is not trusted: we ask PayPal
+ * for the order status and only close our payment attempt if PayPal has not been approved/captured.
+ */
+export async function cancelPayPalPayment(actor: Actor, orderId: string, paypalOrderId: string) {
+  assertBuyer(actor, "orders.place");
+  const order = await loadOrderFor(actor, orderId);
+  const payment = (await db.select().from(payments).where(and(eq(payments.orderId, order.id), eq(payments.providerOrderId, paypalOrderId))).limit(1))[0];
+  if (!payment) throw notFound("Payment not found for this order.");
+  if (!["CREATED", "APPROVED"].includes(payment.status)) return { status: payment.status };
+  let pp: PayPalOrder | null = null;
+  try { pp = await paypal().getOrder(paypalOrderId); } catch (e) { log.warn("paypal_cancel_lookup_failed", { paymentId: payment.id, message: (e as Error).message }); }
+  if (pp && (pp.status === "APPROVED" || pp.status === "COMPLETED")) {
+    // Approved after all (e.g. the popup closed late) — reconcile instead of cancelling.
+    return reconcilePayPalOrder(payment.id, pp, "buyer_cancel_check");
+  }
+  await db.transaction(async (tx) => {
+    const res = await tx.update(payments).set({ status: "CANCELLED", providerStatus: pp?.status ?? payment.providerStatus, failureReason: "Cancelled by buyer at PayPal", updatedAt: new Date() })
+      .where(and(eq(payments.id, payment.id), inArray(payments.status, ["CREATED", "APPROVED"]))).returning({ id: payments.id });
+    if (res.length) await orderEvent(tx, order.id, "PAYMENT_CANCELLED", "PayPal payment was cancelled. Nothing was charged; the order is still awaiting payment.");
+  });
+  return { status: "CANCELLED" };
+}
+
+/** Bring one PayPal payment in line with PayPal's own record (capture if approved but not captured). */
+async function reconcilePayPalOrder(paymentId: string, pp: PayPalOrder, source: string): Promise<{ status: string }> {
+  const payment = (await db.select().from(payments).where(eq(payments.id, paymentId)))[0];
+  let current = pp;
+  if (current.status === "APPROVED") {
+    try { current = await paypal().captureOrder(current.id, `pp-capture-${payment.id}`); }
+    catch (e) {
+      if (e instanceof PayPalApiError && e.issue === "ORDER_ALREADY_CAPTURED") current = await paypal().getOrder(current.id);
+      else throw new AppError(502, "PayPal could not complete the capture. Try again shortly.", "PAYPAL_RECONCILE_FAILED");
+    }
+  }
+  const capture = current.purchase_units?.[0]?.payments?.captures?.[0];
+  if (capture) return { status: await db.transaction((tx) => applyCapture(tx, payment.id, capture, source, current.payer?.payer_id)) };
+  if (current.status === "VOIDED") {
+    await db.update(payments).set({ status: "CANCELLED", providerStatus: "VOIDED", updatedAt: new Date() }).where(and(eq(payments.id, payment.id), inArray(payments.status, ["CREATED", "APPROVED"])));
+    return { status: "CANCELLED" };
+  }
+  await db.update(payments).set({ providerStatus: current.status, updatedAt: new Date() }).where(eq(payments.id, payment.id));
+  return { status: current.status };
+}
+
+/** Staff action: re-check a PayPal payment against PayPal (e.g. buyer closed the browser after approving). */
+export async function reconcilePayPalPayment(actor: Actor, paymentId: string) {
+  assertCan(actor, "payments.manage");
+  const payment = (await db.select().from(payments).where(eq(payments.id, paymentId)))[0];
+  if (!payment || payment.provider !== "PAYPAL" || !payment.providerOrderId) throw notFound("PayPal payment not found.");
+  const pp = await paypal().getOrder(payment.providerOrderId);
+  const r = await reconcilePayPalOrder(payment.id, pp, "staff_reconcile");
+  await audit(actor, "payment.reconcile", "payment", payment.id, { providerStatus: pp.status, result: r.status });
+  return r;
 }
 
 export async function switchPaymentMethod(actor: Actor, orderId: string, method: "PAYPAL" | "MANUAL_TRANSFER") {

@@ -1,7 +1,7 @@
 /**
  * Release step (Railway pre-deploy): migrate, then first-run setup.
  *   - Reference data (roles, permissions, categories, default settings) — idempotent, never overwrites edits.
- *   - Sample catalog — imported ONLY when the products table is empty, so admin edits are never clobbered.
+ *   - Sample catalog — only listings whose slug is not yet in the database are added; existing ones are never changed.
  *   - BOOTSTRAP_ADMIN_EMAIL — if set and no staff account exists with that email, creates a SUPER_ADMIN
  *     with no usable password and prints a single-use, 24-hour "set your password" link to the deploy log.
  *     No password ever exists in variables, logs or the repository.
@@ -9,7 +9,7 @@
 import "./load-env";
 import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { count, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db, pool } from "../src/db";
 import { passwordResetTokens, products, roles, users } from "../src/db/schema";
@@ -26,13 +26,16 @@ async function main() {
   await bootstrapReferenceData();
   console.log("Reference data ready.");
 
-  const [{ n }] = await db.select({ n: count() }).from(products);
-  if (Number(n) === 0) {
-    const catalog = JSON.parse(readFileSync("data/catalog.json", "utf8"));
-    const r = await importProducts(catalog.products);
-    console.log(`Catalog imported: ${r.created} products, ${r.skuCount} SKUs, ${r.errors.length} errors.`);
+  // Add listings that are new in data/catalog.json; never touch existing ones (staff may have edited them).
+  const catalog = JSON.parse(readFileSync("data/catalog.json", "utf8")) as { products: { slug: string }[] };
+  const existing = new Set((await db.select({ slug: products.slug }).from(products)).map((r) => r.slug));
+  const missing = catalog.products.filter((p) => !existing.has(p.slug));
+  if (missing.length) {
+    const r = await importProducts(missing);
+    console.log(`Catalog: added ${r.created} new listings (${r.skuCount} SKUs), ${r.errors.length} errors; ${existing.size} existing listings untouched.`);
+    for (const e of r.errors.slice(0, 10)) console.log("  !", e.row, e.message);
   } else {
-    console.log(`Catalog present (${n} products); not re-imported.`);
+    console.log(`Catalog up to date (${existing.size} listings).`);
   }
 
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase();

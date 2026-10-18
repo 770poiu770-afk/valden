@@ -23,7 +23,7 @@ export default async function Companies({ searchParams }: { searchParams: Promis
         <button className="btn-deep">Filter</button>
       </form>
       {rows.length === 0 ? <Empty title="No accounts match" /> : (
-        <div className="panel overflow-x-auto"><table className="tbl min-w-[800px]">
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[800px]">
           <thead><tr><th>Company</th><th>Country</th><th>Type</th><th>Registration</th><th>Status</th><th>Registered</th></tr></thead>
           <tbody>{rows.map((c) => <tr key={c.id}><td><Link className="link" href={`/admin/companies/${c.id}`}>{c.legalName}</Link><p className="text-xs text-steel-500">{c.businessEmail}</p></td><td>{c.countryCode}</td><td>{c.businessType}</td><td className="num">{c.registrationNumber}</td><td><StatusPill status={c.status} /></td><td>{fmtDate(c.createdAt)}</td></tr>)}</tbody>
         </table></div>

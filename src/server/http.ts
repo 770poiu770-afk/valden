@@ -62,12 +62,50 @@ export function route<P = Record<string, string>>(fn: (ctx: Ctx<P>) => Promise<u
       const actor = await currentActor();
       const params = (await context?.params) ?? ({} as P);
       const result = await fn({ req, params, actor });
+      if (isNativeFormPost(req)) return await nativeSuccess(req, result);
       if (result instanceof Response) return result;
       return NextResponse.json(jsonSafe(result ?? { ok: true }));
     } catch (e) {
+      if (isNativeFormPost(req)) return nativeError(req, e);
       return errorResponse(e);
     }
   };
+}
+
+/**
+ * A form submitted by the browser itself (before JavaScript has loaded, or with JS disabled).
+ * Forms always use method="post", so credentials never end up in a URL; here we answer with a
+ * redirect instead of JSON so the user lands on a normal page.
+ */
+function isNativeFormPost(req: NextRequest) {
+  const ct = req.headers.get("content-type") ?? "";
+  return req.method === "POST" && (ct.includes("application/x-www-form-urlencoded") || ct.includes("multipart/form-data")) && (req.headers.get("accept") ?? "").includes("text/html");
+}
+/** Public origin for redirects — behind Railway's proxy req.url carries the internal host. */
+const publicBase = (req: NextRequest) => process.env.APP_URL || req.url;
+function backTo(req: NextRequest) {
+  const ref = req.headers.get("referer");
+  try { const u = ref ? new URL(ref) : null; return u ? `${u.pathname}${u.search}` : "/"; } catch { return "/"; }
+}
+async function nativeSuccess(req: NextRequest, result: unknown) {
+  let body: unknown = result;
+  let cookies: string[] = [];
+  if (result instanceof Response) {
+    cookies = result.headers.getSetCookie?.() ?? [];
+    body = await result.clone().json().catch(() => ({}));
+  }
+  const to = (body as { redirect?: unknown })?.redirect;
+  const target = typeof to === "string" && to.startsWith("/") && !to.startsWith("//") ? to : backTo(req);
+  const res = NextResponse.redirect(new URL(target, publicBase(req)), 303);
+  for (const c of cookies) res.headers.append("set-cookie", c);
+  return res;
+}
+function nativeError(req: NextRequest, e: unknown) {
+  const msg = e instanceof AppError ? e.message : e instanceof ZodError ? "Please check the form and try again." : "Something went wrong. Please try again.";
+  if (!(e instanceof AppError) && !(e instanceof ZodError)) log.error("unhandled_route_error", { message: (e as Error)?.message });
+  const u = new URL(backTo(req), publicBase(req));
+  u.searchParams.set("error", msg.slice(0, 200));
+  return NextResponse.redirect(u, 303);
 }
 
 export function errorResponse(e: unknown) {

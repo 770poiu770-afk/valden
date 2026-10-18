@@ -104,7 +104,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           </div>
           <p className="mt-2 text-xs text-steel-500">Specifications are compiled for catalog setup and should be verified against the manufacturer&apos;s current datasheet.</p>
           <h2 className="wide mb-3 mt-10 text-xl">Available SKUs</h2>
-          <div className="panel overflow-x-auto">
+          <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
             <table className="tbl"><thead><tr><th>SKU</th><th>Configuration</th><th>Region</th></tr></thead>
               <tbody>{variants.map((v) => <tr key={v.id}><td className="num font-medium">{v.sku}</td><td>{v.label}</td><td>{v.region ?? "—"}</td></tr>)}</tbody>
             </table>

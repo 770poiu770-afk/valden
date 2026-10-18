@@ -76,7 +76,7 @@ export function ActionForm({ action, method = "POST", children, className = "", 
   }
 
   return (
-    <form onSubmit={onSubmit} className={className} noValidate={false}>
+    <form onSubmit={onSubmit} className={className} noValidate={false} {...(method === "POST" ? { method: "post", action, encType: encoding === "multipart" ? "multipart/form-data" : undefined } : { method: "post" })}>
       {children}
       {(state.error || state.ok) && (
         <div role={state.error ? "alert" : "status"} className={`mt-3 rounded border px-3 py-2 text-sm ${state.error ? "border-bad/30 bg-bad-soft text-bad" : "border-ok/30 bg-ok-soft text-ok"}`}>

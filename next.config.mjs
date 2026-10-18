@@ -9,7 +9,8 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com",
+      // 'unsafe-eval' only in development (React Refresh needs it); never in production.
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.paypal.com https://*.paypalobjects.com",
       "font-src 'self' data:",

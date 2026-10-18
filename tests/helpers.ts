@@ -57,7 +57,12 @@ export class FakePayPal implements PayPalGateway {
     this.requestIds.set(a.requestId, id);
     return { id, status: "CREATED" };
   }
-  async getOrder(id: string): Promise<PayPalOrder> { return this.captured(id, "COMPLETED"); }
+  /** When set, getOrder reports this (uncaptured) status instead of a completed capture. */
+  getOrderStatus: "CREATED" | "APPROVED" | "VOIDED" | null = null;
+  async getOrder(id: string): Promise<PayPalOrder> {
+    if (this.getOrderStatus) return { id, status: this.getOrderStatus };
+    return this.captured(id, "COMPLETED");
+  }
   async captureOrder(id: string): Promise<PayPalOrder> {
     this.calls.push("capture");
     if (this.captureBehaviour === "INSTRUMENT_DECLINED") {

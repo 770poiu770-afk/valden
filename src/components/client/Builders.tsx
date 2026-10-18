@@ -54,7 +54,7 @@ export function QuoteBuilder({ initial, currency }: { initial: Row[]; currency: 
   return (
     <div className="space-y-5">
       <div className="panel panel-pad"><SkuSearch onPick={(h) => setRows((r) => r.some((x) => x.sku === h.sku) ? r : [...r, { sku: h.sku, name: `${h.name} — ${h.label}`, quantity: h.moq, targetUnitPrice: "", moq: h.moq }])} /></div>
-      <div className="panel overflow-x-auto">
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
         <table className="tbl min-w-[640px]">
           <thead><tr><th>Product</th><th className="w-32 text-right">Quantity</th><th className="w-40 text-right">Target unit price (USD)</th><th className="w-16" /></tr></thead>
           <tbody>
@@ -133,7 +133,7 @@ export function BulkBuilder({ currency }: { currency: string }) {
       {preview && (
         <div className="space-y-3">
           {preview.unknown.length > 0 && <p className="rounded border border-bad/30 bg-bad-soft px-3 py-2 text-sm text-bad">Unknown SKUs: {preview.unknown.join(", ")}</p>}
-          <div className="panel overflow-x-auto">
+          <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
             <table className="tbl min-w-[640px]">
               <thead><tr><th>SKU</th><th>Product</th><th className="text-right">Qty</th><th className="text-right">Unit</th><th className="text-right">Line</th></tr></thead>
               <tbody>{preview.lines.map((l) => (

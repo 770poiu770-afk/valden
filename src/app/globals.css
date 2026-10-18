@@ -32,7 +32,7 @@
 
   .field-label { @apply mb-1 block text-[13px] font-semibold text-steel; }
   .field-hint { @apply mt-1 text-xs text-steel-500; }
-  .input { @apply block w-full rounded border border-line-strong bg-white px-3 py-2 text-sm text-steel placeholder:text-steel-400 focus:border-deep focus:outline-none focus:ring-2 focus:ring-deep/20 disabled:bg-paper; }
+  .input { @apply block w-full rounded border border-line-strong bg-white px-3 py-2 text-sm text-steel placeholder:text-steel-400 focus:border-deep focus:outline-none focus:ring-2 focus:ring-deep/50 disabled:bg-paper; }
   .panel { @apply rounded-md border border-line bg-white; }
   .panel-pad { @apply p-5 sm:p-6; }
   .link { @apply font-medium text-deep-600 underline decoration-deep-200 underline-offset-2 hover:decoration-deep-600; }

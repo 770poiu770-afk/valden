@@ -6,7 +6,7 @@ import { currentActor } from "@/server/http";
 
 export const metadata = { title: "Sign in" };
 
-export default async function Login({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string }> }) {
+export default async function Login({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string; error?: string }> }) {
   const sp = await searchParams;
   const actor = await currentActor();
   if (actor) redirect(actor.isStaff ? "/admin" : "/portal");
@@ -16,6 +16,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
         <h1 className="wide text-3xl">Sign in to your trade account</h1>
         <p className="mt-2 text-steel-500">Use the email address registered for your company&apos;s purchasing contact.</p>
         {sp.reset && <div className="mt-4"><Notice tone="ok">Your password has been updated.</Notice></div>}
+        {sp.error && <div className="mt-4" role="alert"><Notice tone="bad">{sp.error.slice(0, 200)}</Notice></div>}
         <ActionForm action="/api/auth/login" className="mt-6 space-y-4" submitLabel="Sign in" submitClass="btn-deep w-full" pendingLabel="Signing in…">
           <input type="hidden" name="next" value={sp.next ?? ""} />
           <div><label className="field-label" htmlFor="email">Business email</label><input id="email" name="email" type="email" autoComplete="username" required className="input" /></div>

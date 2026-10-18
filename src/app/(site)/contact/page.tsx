@@ -1,7 +1,7 @@
 import { ActionForm } from "@/components/ActionForm";
 import { companyInfo } from "@/lib/company";
 export const metadata = { title: "Contact the trade desk" };
-const TOPICS = ["Trade account", "Quote request", "Order support", "Logistics", "Partnership", "Other"];
+const TOPICS = ["Trade account", "Quote request", "Order support", "Logistics", "Accessibility", "Partnership", "Other"];
 export default function Contact({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
   const c = companyInfo();
   return <ContactInner c={c} searchParams={searchParams} />;

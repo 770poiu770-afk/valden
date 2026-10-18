@@ -11,7 +11,7 @@ import { getProductDetail, searchCatalog } from "@/server/catalog";
 import { upsertCartLines, viewCart } from "@/server/cart";
 import { cancelOrder, confirmOrder, createShipment, loadOrderFor, orderBundle, placeOrderFromCart, updateShipment } from "@/server/orders";
 import { acceptOffer, issueOffer, quoteBundle, requestQuote } from "@/server/quotes";
-import { capturePayPalPayment, handlePayPalWebhook, issueRefund, recordManualPayment, startPayPalPayment, switchPaymentMethod } from "@/server/payments";
+import { cancelPayPalPayment, capturePayPalPayment, handlePayPalWebhook, issueRefund, reconcilePayPalPayment, recordManualPayment, startPayPalPayment, switchPaymentMethod } from "@/server/payments";
 import { importPricesCsv, importProducts, parseCatalogCsv, exportPricesCsv } from "@/server/catalog-import";
 import { setPayPalGateway } from "@/server/paypal";
 import { approvedBuyer, fakeDoc, installFakePayPal, regInput, staff, type FakePayPal } from "./helpers";
@@ -324,6 +324,53 @@ describe("11–15. PayPal sandbox flow, webhooks, failures and refunds", () => {
     const retry = await startPayPalPayment(b.actor, order.id);
     expect(retry.paypalOrderId).not.toBe(s.paypalOrderId);
     expect((await capturePayPalPayment(b.actor, order.id, retry.paypalOrderId)).status).toBe("COMPLETED");
+  });
+  it("records buyer cancellation only after PayPal confirms nothing was approved", async () => {
+    const b = await approvedBuyer();
+    const order = await paidReadyOrder(b);
+    const s = await startPayPalPayment(b.actor, order.id);
+    pp.getOrderStatus = "CREATED";
+    expect((await cancelPayPalPayment(b.actor, order.id, s.paypalOrderId)).status).toBe("CANCELLED");
+    const p = (await db.select().from(payments).where(eq(payments.providerOrderId, s.paypalOrderId)))[0];
+    expect(p.status).toBe("CANCELLED");
+    let o = (await db.select().from(orders).where(eq(orders.id, order.id)))[0];
+    expect(o.status).toBe("AWAITING_PAYMENT");
+    expect(o.paymentStatus).toBe("UNPAID");
+    await expect(capturePayPalPayment(b.actor, order.id, s.paypalOrderId)).rejects.toThrow(/closed/); // cannot capture a cancelled attempt
+    // A browser "cancel" for an order PayPal says was approved is reconciled, not cancelled.
+    pp.getOrderStatus = null;
+    const s2 = await startPayPalPayment(b.actor, order.id);
+    expect(s2.paypalOrderId).not.toBe(s.paypalOrderId);
+    pp.getOrderStatus = "APPROVED";
+    expect((await cancelPayPalPayment(b.actor, order.id, s2.paypalOrderId)).status).toBe("COMPLETED");
+    o = (await db.select().from(orders).where(eq(orders.id, order.id)))[0];
+    expect(o.status).toBe("PAID");
+    pp.getOrderStatus = null;
+  });
+  it("lets finance reconcile an approved-but-uncaptured payment with PayPal", async () => {
+    const b = await approvedBuyer();
+    const order = await paidReadyOrder(b);
+    const s = await startPayPalPayment(b.actor, order.id);
+    await expect(reconcilePayPalPayment(b.actor, s.paymentId)).rejects.toThrow(); // buyers cannot
+    pp.getOrderStatus = "APPROVED";
+    expect((await reconcilePayPalPayment(await staff(), s.paymentId)).status).toBe("COMPLETED");
+    pp.getOrderStatus = null;
+    expect((await db.select().from(orders).where(eq(orders.id, order.id)))[0].paymentStatus).toBe("PAID");
+  });
+  it("blocks a second payment on a paid order and flags a duplicate capture for refund", async () => {
+    const b = await approvedBuyer();
+    const order = await paidReadyOrder(b);
+    const s = await startPayPalPayment(b.actor, order.id);
+    expect((await capturePayPalPayment(b.actor, order.id, s.paypalOrderId)).status).toBe("COMPLETED");
+    await expect(startPayPalPayment(b.actor, order.id)).rejects.toThrow();
+  });
+  it("refuses live PayPal while sample data is allowed", async () => {
+    const b = await approvedBuyer();
+    const order = await paidReadyOrder(b);
+    const prev = { env: process.env.PAYPAL_ENV, sample: process.env.ALLOW_SAMPLE_DATA };
+    process.env.PAYPAL_ENV = "live"; process.env.ALLOW_SAMPLE_DATA = "true";
+    try { await expect(startPayPalPayment(b.actor, order.id)).rejects.toThrow(/temporarily unavailable/); }
+    finally { process.env.PAYPAL_ENV = prev.env; process.env.ALLOW_SAMPLE_DATA = prev.sample; if (prev.env === undefined) delete process.env.PAYPAL_ENV; if (prev.sample === undefined) delete process.env.ALLOW_SAMPLE_DATA; }
   });
   it("processes verified webhooks once and rejects unverified ones", async () => {
     const b = await approvedBuyer();

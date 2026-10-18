@@ -40,7 +40,13 @@ export function PayPalCheckout({ orderId, clientId, currency }: { orderId: strin
           else setMsg({ tone: "bad", text: "PayPal declined the payment. No funds were taken." });
           router.refresh();
         },
-        onCancel: () => setMsg({ tone: "info", text: "Payment cancelled. Your order is still awaiting payment." }),
+        onCancel: async (data: { orderID?: string }) => {
+          setMsg({ tone: "info", text: "Payment cancelled. Nothing was charged; your order is still awaiting payment." });
+          if (data?.orderID) {
+            await fetch(`/api/orders/${orderId}/paypal/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paypalOrderId: data.orderID }) }).catch(() => undefined);
+            router.refresh();
+          }
+        },
         onError: () => setMsg({ tone: "bad", text: "PayPal encountered an error. Please try again or switch to bank transfer." }),
       }).render(ref.current).then(() => setLoaded(true)).catch(() => setMsg({ tone: "bad", text: "PayPal buttons could not be displayed." }));
     };

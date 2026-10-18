@@ -219,6 +219,56 @@ const SHAPES = {
       <path d="M186 74q20-26 0-46" {...S} />
     </g>
   ),
+  earbuds: (
+    <g>
+      <rect x="70" y="92" width="100" height="56" rx="24" {...F} /><path d="M70 116h100" {...S} />
+      <path d="M96 40c-14 0-20 10-20 20s8 18 18 18v20" {...S} /><circle cx="96" cy="58" r="12" {...T} stroke="#13335E" strokeWidth={2.2} />
+      <path d="M144 40c14 0 20 10 20 20s-8 18-18 18v20" {...S} /><circle cx="144" cy="58" r="12" {...T} stroke="#13335E" strokeWidth={2.2} />
+    </g>
+  ),
+  speaker: (
+    <g>
+      <rect x="64" y="40" width="112" height="104" rx="18" {...F} />
+      <circle cx="120" cy="98" r="28" {...T} stroke="#13335E" strokeWidth={2.2} /><circle cx="120" cy="98" r="10" {...S} /><circle cx="120" cy="58" r="6" {...S} />
+    </g>
+  ),
+  watch: (
+    <g>
+      <rect x="100" y="20" width="40" height="34" rx="6" {...T} stroke="#13335E" strokeWidth={2.2} /><rect x="100" y="126" width="40" height="34" rx="6" {...T} stroke="#13335E" strokeWidth={2.2} />
+      <rect x="88" y="52" width="64" height="76" rx="16" {...F} /><rect x="96" y="60" width="48" height="60" rx="10" {...T} />
+      <rect x="152" y="76" width="5" height="16" rx="2" fill="#13335E" />
+      <path d="M120 74v16l10 6" {...S} />
+    </g>
+  ),
+  charger: (
+    <g>
+      <rect x="86" y="58" width="68" height="76" rx="12" {...F} /><path d="M106 58V40M134 58V40" {...S} />
+      <rect x="110" y="110" width="20" height="8" rx="3" {...T} stroke="#13335E" strokeWidth={1.6} />
+      <path d="M124 74l-10 18h12l-10 16" {...S} />
+    </g>
+  ),
+  powerbank: (
+    <g>
+      <rect x="66" y="56" width="108" height="72" rx="12" {...F} />
+      {[0, 1, 2, 3].map((i) => <circle key={i} cx={92 + i * 12} cy="112" r="3" fill="#13335E" />)}
+      <rect x="174" y="80" width="8" height="24" rx="2" {...T} stroke="#13335E" strokeWidth={1.6} />
+      <path d="M130 70l-10 18h12l-10 16" {...S} />
+    </g>
+  ),
+  console: (
+    <g>
+      <rect x="54" y="30" width="54" height="120" rx="10" {...F} /><path d="M66 46v88" {...S} />
+      <path d="M128 112c0-12 10-20 22-20h28c12 0 22 8 22 20l4 18c2 10-10 16-18 8l-8-8h-32l-8 8c-8 8-20 2-18-8z" {...F} />
+      <circle cx="184" cy="108" r="3" fill="#13335E" /><path d="M144 104v10M139 109h10" {...S} />
+    </g>
+  ),
+  handheld: (
+    <g>
+      <path d="M40 70c0-10 8-18 18-18h124c10 0 18 8 18 18v40c0 10-8 18-18 18H58c-10 0-18-8-18-18z" {...F} />
+      <rect x="78" y="60" width="84" height="60" rx="4" {...T} />
+      <path d="M56 84v12M50 90h12" {...S} /><circle cx="184" cy="84" r="3" fill="#13335E" /><circle cx="184" cy="98" r="3" fill="#13335E" />
+    </g>
+  ),
   generic: (
     <g>
       <rect x="62" y="48" width="116" height="84" rx="6" {...F} />
@@ -234,10 +284,12 @@ const ALIASES: Record<string, Kind> = {
   "cooler-air": "cooler", fan: "cooler", mouse: "peripheral", keyboard: "peripheral", ups: "psu", paste: "generic",
 };
 
-export function ProductArt({ kind, className = "", label }: { kind: string; className?: string; label?: string }) {
+/** `decorative` hides the drawing from assistive tech (use inside a link that already names the item). */
+export function ProductArt({ kind, className = "", label, decorative = false }: { kind: string; className?: string; label?: string; decorative?: boolean }) {
   const k: Kind = (kind in SHAPES ? kind : ALIASES[kind] ?? "generic") as Kind;
+  const a11y = decorative ? { "aria-hidden": true, focusable: "false" as const } : { role: "img", "aria-label": label ?? "Product illustration (no photo available)" };
   return (
-    <svg viewBox="0 0 240 180" className={className} style={{ background: "#EEF3F9" }} role="img" aria-label={label ?? "Product illustration"}>
+    <svg viewBox="0 0 240 180" className={className} style={{ background: "#EEF3F9" }} {...a11y}>
       <rect width="240" height="180" fill="#EEF3F9" />
       <path d="M0 160h240" stroke="#D6DDE3" strokeWidth="1" />
       {SHAPES[k]}

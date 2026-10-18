@@ -1,6 +1,6 @@
 {
  "_notice": "SAMPLE CATALOG. Reference prices are indicative estimates for development and are NOT verified market data, supplier quotes or stock. Replace before launch.",
- "generatedAt": "2026-10-17",
+ "generatedAt": "2026-10-18",
  "products": [
   {
    "slug": "apple-iphone-17-pro-max-256gb",
@@ -21966,6 +21966,2240 @@
      "region": "GLOBAL"
     }
    ],
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-airpods-pro-3",
+   "sku": "VLD-AUD-4ADE1E",
+   "category": "audio",
+   "subcategory": "Earbuds",
+   "manufacturer": "Apple",
+   "model": "AirPods Pro 3",
+   "name": "Apple AirPods Pro 3",
+   "summary": "Active noise cancelling earbuds with USB-C charging case.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation, Transparency"
+    },
+    {
+     "group": "Battery",
+     "label": "Charging",
+     "value": "USB-C case"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Pairing",
+     "value": "Bluetooth"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Earbuds"
+   },
+   "referenceUsd": 249,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "earbuds",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-4ADE1E-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-airpods-4-with-active-noise-cancellation",
+   "sku": "VLD-AUD-F07B37",
+   "category": "audio",
+   "subcategory": "Earbuds",
+   "manufacturer": "Apple",
+   "model": "AirPods 4 with Active Noise Cancellation",
+   "name": "Apple AirPods 4 with Active Noise Cancellation",
+   "summary": "Open-fit earbuds with ANC and USB-C case.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation"
+    },
+    {
+     "group": "Battery",
+     "label": "Charging",
+     "value": "USB-C case"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Earbuds"
+   },
+   "referenceUsd": 179,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "earbuds",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-F07B37-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-airpods-max-usb-c",
+   "sku": "VLD-AUD-595E0C",
+   "category": "audio",
+   "subcategory": "Headphones",
+   "manufacturer": "Apple",
+   "model": "AirPods Max (USB-C)",
+   "name": "Apple AirPods Max (USB-C)",
+   "summary": "Over-ear headphones with ANC and spatial audio.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Port",
+     "value": "USB-C"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Headphones"
+   },
+   "referenceUsd": 549,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "headset",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-595E0C-01",
+     "label": "Midnight",
+     "color": "Midnight",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-595E0C-02",
+     "label": "Starlight",
+     "color": "Starlight",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-595E0C-03",
+     "label": "Blue",
+     "color": "Blue",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sony-wh-1000xm6",
+   "sku": "VLD-AUD-A07F94",
+   "category": "audio",
+   "subcategory": "Headphones",
+   "manufacturer": "Sony",
+   "model": "WH-1000XM6",
+   "name": "Sony WH-1000XM6",
+   "summary": "Wireless over-ear noise cancelling headphones.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Adaptive noise cancellation"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Pairing",
+     "value": "Bluetooth, multipoint"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Headphones"
+   },
+   "referenceUsd": 449,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "headset",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-A07F94-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-A07F94-02",
+     "label": "Platinum Silver",
+     "color": "Platinum Silver",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sony-wf-1000xm5",
+   "sku": "VLD-AUD-9DF61D",
+   "category": "audio",
+   "subcategory": "Earbuds",
+   "manufacturer": "Sony",
+   "model": "WF-1000XM5",
+   "name": "Sony WF-1000XM5",
+   "summary": "Noise cancelling true wireless earbuds.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation"
+    },
+    {
+     "group": "Battery",
+     "label": "Charging",
+     "value": "USB-C and Qi wireless case"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Earbuds"
+   },
+   "referenceUsd": 299,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "earbuds",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-9DF61D-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-9DF61D-02",
+     "label": "Silver",
+     "color": "Silver",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "bose-quietcomfort-ultra-headphones-2nd-gen",
+   "sku": "VLD-AUD-E7BEEF",
+   "category": "audio",
+   "subcategory": "Headphones",
+   "manufacturer": "Bose",
+   "model": "QuietComfort Ultra Headphones (2nd Gen)",
+   "name": "Bose QuietComfort Ultra Headphones (2nd Gen)",
+   "summary": "Over-ear headphones with immersive audio and ANC.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Port",
+     "value": "USB-C (audio and charging)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Headphones"
+   },
+   "referenceUsd": 449,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "headset",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-E7BEEF-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-E7BEEF-02",
+     "label": "White Smoke",
+     "color": "White Smoke",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "bose-quietcomfort-ultra-earbuds-2nd-gen",
+   "sku": "VLD-AUD-4B4B76",
+   "category": "audio",
+   "subcategory": "Earbuds",
+   "manufacturer": "Bose",
+   "model": "QuietComfort Ultra Earbuds (2nd Gen)",
+   "name": "Bose QuietComfort Ultra Earbuds (2nd Gen)",
+   "summary": "Noise cancelling earbuds with immersive audio.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Active noise cancellation"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Earbuds"
+   },
+   "referenceUsd": 299,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "earbuds",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-4B4B76-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-4B4B76-02",
+     "label": "White Smoke",
+     "color": "White Smoke",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-galaxy-buds3-pro",
+   "sku": "VLD-AUD-6A9093",
+   "category": "audio",
+   "subcategory": "Earbuds",
+   "manufacturer": "Samsung",
+   "model": "Galaxy Buds3 Pro",
+   "name": "Samsung Galaxy Buds3 Pro",
+   "summary": "ANC earbuds with blade design.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Adaptive ANC"
+    },
+    {
+     "group": "Battery",
+     "label": "Charging",
+     "value": "USB-C and wireless case"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Earbuds"
+   },
+   "referenceUsd": 249,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "earbuds",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-6A9093-01",
+     "label": "Silver",
+     "color": "Silver",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-6A9093-02",
+     "label": "White",
+     "color": "White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sennheiser-momentum-4-wireless",
+   "sku": "VLD-AUD-FA1DCA",
+   "category": "audio",
+   "subcategory": "Headphones",
+   "manufacturer": "Sennheiser",
+   "model": "MOMENTUM 4 Wireless",
+   "name": "Sennheiser MOMENTUM 4 Wireless",
+   "summary": "Wireless headphones with long battery life.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Noise control",
+     "value": "Adaptive ANC"
+    },
+    {
+     "group": "Battery",
+     "label": "Rated",
+     "value": "Up to 60 hours (manufacturer figure)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Headphones"
+   },
+   "referenceUsd": 349,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "headset",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-FA1DCA-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-FA1DCA-02",
+     "label": "White",
+     "color": "White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "jbl-charge-6",
+   "sku": "VLD-AUD-65B3FC",
+   "category": "audio",
+   "subcategory": "Portable speakers",
+   "manufacturer": "JBL",
+   "model": "Charge 6",
+   "name": "JBL Charge 6",
+   "summary": "Waterproof portable Bluetooth speaker.",
+   "specs": [
+    {
+     "group": "Durability",
+     "label": "Rating",
+     "value": "IP68 (manufacturer rating)"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Pairing",
+     "value": "Bluetooth"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Portable speakers"
+   },
+   "referenceUsd": 199,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-65B3FC-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-65B3FC-02",
+     "label": "Blue",
+     "color": "Blue",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-65B3FC-03",
+     "label": "Red",
+     "color": "Red",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "jbl-flip-7",
+   "sku": "VLD-AUD-ED7B6B",
+   "category": "audio",
+   "subcategory": "Portable speakers",
+   "manufacturer": "JBL",
+   "model": "Flip 7",
+   "name": "JBL Flip 7",
+   "summary": "Compact waterproof Bluetooth speaker.",
+   "specs": [
+    {
+     "group": "Durability",
+     "label": "Rating",
+     "value": "IP68 (manufacturer rating)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Portable speakers"
+   },
+   "referenceUsd": 149,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-ED7B6B-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-ED7B6B-02",
+     "label": "Blue",
+     "color": "Blue",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-ED7B6B-03",
+     "label": "Red",
+     "color": "Red",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "jbl-partybox-320",
+   "sku": "VLD-AUD-55717A",
+   "category": "audio",
+   "subcategory": "Party speakers",
+   "manufacturer": "JBL",
+   "model": "PartyBox 320",
+   "name": "JBL PartyBox 320",
+   "summary": "Portable party speaker with lights and replaceable battery.",
+   "specs": [
+    {
+     "group": "Power",
+     "label": "Battery",
+     "value": "Replaceable"
+    },
+    {
+     "group": "Inputs",
+     "label": "Mic/guitar",
+     "value": "Dual inputs"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Party speakers"
+   },
+   "referenceUsd": 499,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-55717A-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sonos-era-100",
+   "sku": "VLD-AUD-7D6AEC",
+   "category": "audio",
+   "subcategory": "Home speakers",
+   "manufacturer": "Sonos",
+   "model": "Era 100",
+   "name": "Sonos Era 100",
+   "summary": "Compact smart speaker with stereo sound.",
+   "specs": [
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "Wi-Fi, Bluetooth"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Home speakers"
+   },
+   "referenceUsd": 199,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-7D6AEC-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-7D6AEC-02",
+     "label": "White",
+     "color": "White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sonos-move-2",
+   "sku": "VLD-AUD-3297C0",
+   "category": "audio",
+   "subcategory": "Portable speakers",
+   "manufacturer": "Sonos",
+   "model": "Move 2",
+   "name": "Sonos Move 2",
+   "summary": "Portable smart speaker with Wi-Fi and Bluetooth.",
+   "specs": [
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "Wi-Fi, Bluetooth"
+    },
+    {
+     "group": "Durability",
+     "label": "Rating",
+     "value": "IP56 (manufacturer rating)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Portable speakers"
+   },
+   "referenceUsd": 449,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-3297C0-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-3297C0-02",
+     "label": "Olive",
+     "color": "Olive",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sonos-arc-ultra",
+   "sku": "VLD-AUD-10BBAC",
+   "category": "audio",
+   "subcategory": "Soundbars",
+   "manufacturer": "Sonos",
+   "model": "Arc Ultra",
+   "name": "Sonos Arc Ultra",
+   "summary": "Premium Dolby Atmos soundbar.",
+   "specs": [
+    {
+     "group": "Audio",
+     "label": "Format",
+     "value": "Dolby Atmos"
+    },
+    {
+     "group": "Connectivity",
+     "label": "TV",
+     "value": "HDMI eARC"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Soundbars"
+   },
+   "referenceUsd": 999,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-10BBAC-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-10BBAC-02",
+     "label": "White",
+     "color": "White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "bose-soundlink-max",
+   "sku": "VLD-AUD-45E35B",
+   "category": "audio",
+   "subcategory": "Portable speakers",
+   "manufacturer": "Bose",
+   "model": "SoundLink Max",
+   "name": "Bose SoundLink Max",
+   "summary": "Large portable Bluetooth speaker.",
+   "specs": [
+    {
+     "group": "Durability",
+     "label": "Rating",
+     "value": "IP67 (manufacturer rating)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Portable speakers"
+   },
+   "referenceUsd": 399,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-45E35B-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-45E35B-02",
+     "label": "Blue Dusk",
+     "color": "Blue Dusk",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "marshall-stanmore-iii",
+   "sku": "VLD-AUD-E91E60",
+   "category": "audio",
+   "subcategory": "Home speakers",
+   "manufacturer": "Marshall",
+   "model": "Stanmore III",
+   "name": "Marshall Stanmore III",
+   "summary": "Bluetooth home speaker.",
+   "specs": [
+    {
+     "group": "Connectivity",
+     "label": "Inputs",
+     "value": "Bluetooth, RCA, 3.5 mm"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Home speakers"
+   },
+   "referenceUsd": 379,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "speaker",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-AUD-E91E60-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-AUD-E91E60-02",
+     "label": "Cream",
+     "color": "Cream",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-watch-series-11-gps-46mm",
+   "sku": "VLD-WCH-0DC7F0",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Apple",
+   "model": "Watch Series 11 GPS 46mm",
+   "name": "Apple Watch Series 11 GPS 46mm",
+   "summary": "Apple Watch with health and fitness tracking.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "46 mm aluminium"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "GPS"
+    },
+    {
+     "group": "Compatibility",
+     "label": "Phone",
+     "value": "iPhone required"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 429,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-0DC7F0-01",
+     "label": "Jet Black",
+     "color": "Jet Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-0DC7F0-02",
+     "label": "Silver",
+     "color": "Silver",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-0DC7F0-03",
+     "label": "Rose Gold",
+     "color": "Rose Gold",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-watch-series-11-gps-42mm",
+   "sku": "VLD-WCH-F922F7",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Apple",
+   "model": "Watch Series 11 GPS 42mm",
+   "name": "Apple Watch Series 11 GPS 42mm",
+   "summary": "Apple Watch with health and fitness tracking.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "42 mm aluminium"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "GPS"
+    },
+    {
+     "group": "Compatibility",
+     "label": "Phone",
+     "value": "iPhone required"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 399,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-F922F7-01",
+     "label": "Jet Black",
+     "color": "Jet Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-F922F7-02",
+     "label": "Silver",
+     "color": "Silver",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-F922F7-03",
+     "label": "Rose Gold",
+     "color": "Rose Gold",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-watch-ultra-3",
+   "sku": "VLD-WCH-0BB86E",
+   "category": "smartwatches",
+   "subcategory": "Outdoor watches",
+   "manufacturer": "Apple",
+   "model": "Watch Ultra 3",
+   "name": "Apple Watch Ultra 3",
+   "summary": "Rugged titanium Apple Watch with cellular.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "49 mm titanium"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "GPS + Cellular"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Outdoor watches"
+   },
+   "referenceUsd": 799,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-0BB86E-01",
+     "label": "Natural",
+     "color": "Natural",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-0BB86E-02",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-watch-se-3-gps-44mm",
+   "sku": "VLD-WCH-DF32C0",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Apple",
+   "model": "Watch SE 3 GPS 44mm",
+   "name": "Apple Watch SE 3 GPS 44mm",
+   "summary": "Entry Apple Watch.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "44 mm aluminium"
+    },
+    {
+     "group": "Compatibility",
+     "label": "Phone",
+     "value": "iPhone required"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 279,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-DF32C0-01",
+     "label": "Midnight",
+     "color": "Midnight",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-DF32C0-02",
+     "label": "Starlight",
+     "color": "Starlight",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-galaxy-watch8-44mm",
+   "sku": "VLD-WCH-803FCE",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Samsung",
+   "model": "Galaxy Watch8 44mm",
+   "name": "Samsung Galaxy Watch8 44mm",
+   "summary": "Wear OS smartwatch with health sensors.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "44 mm"
+    },
+    {
+     "group": "Compatibility",
+     "label": "Phone",
+     "value": "Android"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 379,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-803FCE-01",
+     "label": "Graphite",
+     "color": "Graphite",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-803FCE-02",
+     "label": "Silver",
+     "color": "Silver",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-galaxy-watch8-classic",
+   "sku": "VLD-WCH-221717",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Samsung",
+   "model": "Galaxy Watch8 Classic",
+   "name": "Samsung Galaxy Watch8 Classic",
+   "summary": "Smartwatch with rotating bezel.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "46 mm"
+    },
+    {
+     "group": "Controls",
+     "label": "Bezel",
+     "value": "Rotating"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 499,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-221717-01",
+     "label": "Black",
+     "color": "Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-221717-02",
+     "label": "White",
+     "color": "White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-galaxy-watch-ultra",
+   "sku": "VLD-WCH-B1FF70",
+   "category": "smartwatches",
+   "subcategory": "Outdoor watches",
+   "manufacturer": "Samsung",
+   "model": "Galaxy Watch Ultra",
+   "name": "Samsung Galaxy Watch Ultra",
+   "summary": "Rugged titanium Wear OS watch.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "47 mm titanium"
+    },
+    {
+     "group": "Connectivity",
+     "label": "Network",
+     "value": "LTE"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Outdoor watches"
+   },
+   "referenceUsd": 649,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-B1FF70-01",
+     "label": "Titanium Gray",
+     "color": "Titanium Gray",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-B1FF70-02",
+     "label": "Titanium Silver",
+     "color": "Titanium Silver",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "google-pixel-watch-4-45mm",
+   "sku": "VLD-WCH-836D56",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Google",
+   "model": "Pixel Watch 4 45mm",
+   "name": "Google Pixel Watch 4 45mm",
+   "summary": "Wear OS smartwatch with Fitbit health.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Case",
+     "value": "45 mm"
+    },
+    {
+     "group": "Compatibility",
+     "label": "Phone",
+     "value": "Android"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 399,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-836D56-01",
+     "label": "Obsidian",
+     "color": "Obsidian",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-WCH-836D56-02",
+     "label": "Moonstone",
+     "color": "Moonstone",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "garmin-f-nix-8-amoled-47mm",
+   "sku": "VLD-WCH-A45BF9",
+   "category": "smartwatches",
+   "subcategory": "Outdoor watches",
+   "manufacturer": "Garmin",
+   "model": "fēnix 8 AMOLED 47mm",
+   "name": "Garmin fēnix 8 AMOLED 47mm",
+   "summary": "Multisport GPS watch with AMOLED display.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Type",
+     "value": "AMOLED"
+    },
+    {
+     "group": "Navigation",
+     "label": "Maps",
+     "value": "Preloaded topo maps"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Outdoor watches"
+   },
+   "referenceUsd": 999,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-A45BF9-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "garmin-forerunner-970",
+   "sku": "VLD-WCH-4D22E6",
+   "category": "smartwatches",
+   "subcategory": "Sports watches",
+   "manufacturer": "Garmin",
+   "model": "Forerunner 970",
+   "name": "Garmin Forerunner 970",
+   "summary": "Premium running GPS watch.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Type",
+     "value": "AMOLED"
+    },
+    {
+     "group": "Sport",
+     "label": "Focus",
+     "value": "Running and triathlon"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Sports watches"
+   },
+   "referenceUsd": 749,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-4D22E6-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "garmin-venu-x1",
+   "sku": "VLD-WCH-ECA14B",
+   "category": "smartwatches",
+   "subcategory": "Smartwatches",
+   "manufacturer": "Garmin",
+   "model": "Venu X1",
+   "name": "Garmin Venu X1",
+   "summary": "Large-screen fitness smartwatch.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Type",
+     "value": "AMOLED"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Smartwatches"
+   },
+   "referenceUsd": 799,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "watch",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-WCH-ECA14B-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-20w-usb-c-power-adapter",
+   "sku": "VLD-CHG-0EACF3",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Apple",
+   "model": "20W USB-C Power Adapter",
+   "name": "Apple 20W USB-C Power Adapter",
+   "summary": "Compact single-port USB-C charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "20 W USB-C PD"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 19,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-0EACF3-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-35w-dual-usb-c-port-compact-power-adapter",
+   "sku": "VLD-CHG-351E6F",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Apple",
+   "model": "35W Dual USB-C Port Compact Power Adapter",
+   "name": "Apple 35W Dual USB-C Port Compact Power Adapter",
+   "summary": "Two-port compact USB-C charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "35 W shared across 2× USB-C"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 59,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-351E6F-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-magsafe-charger-25w-1-m",
+   "sku": "VLD-CHG-231D71",
+   "category": "chargers",
+   "subcategory": "Wireless chargers",
+   "manufacturer": "Apple",
+   "model": "MagSafe Charger (25W, 1 m)",
+   "name": "Apple MagSafe Charger (25W, 1 m)",
+   "summary": "Magnetic wireless charger for iPhone.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "Up to 25 W with compatible iPhone and adapter"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wireless chargers"
+   },
+   "referenceUsd": 49,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-231D71-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "apple-240w-usb-c-charge-cable-2-m",
+   "sku": "VLD-CHG-CB598C",
+   "category": "chargers",
+   "subcategory": "Cables",
+   "manufacturer": "Apple",
+   "model": "240W USB-C Charge Cable (2 m)",
+   "name": "Apple 240W USB-C Charge Cable (2 m)",
+   "summary": "Woven USB-C charging cable.",
+   "specs": [
+    {
+     "group": "Cable",
+     "label": "Rating",
+     "value": "240 W"
+    },
+    {
+     "group": "Cable",
+     "label": "Length",
+     "value": "2 m"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Cables"
+   },
+   "referenceUsd": 29,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "dock",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-CB598C-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-45w-power-adapter",
+   "sku": "VLD-CHG-5CAC7C",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Samsung",
+   "model": "45W Power Adapter",
+   "name": "Samsung 45W Power Adapter",
+   "summary": "Super Fast Charging 2.0 USB-C charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "45 W USB-C PD (PPS)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 49,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-5CAC7C-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "anker-prime-charger-100w-3-ports-gan",
+   "sku": "VLD-CHG-7ADE0E",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Anker",
+   "model": "Prime Charger (100W, 3 ports, GaN)",
+   "name": "Anker Prime Charger (100W, 3 ports, GaN)",
+   "summary": "Three-port GaN charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "100 W total"
+    },
+    {
+     "group": "Ports",
+     "label": "Layout",
+     "value": "2× USB-C, 1× USB-A"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 85,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-7ADE0E-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "anker-nano-charger-30w",
+   "sku": "VLD-CHG-C8ADFF",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Anker",
+   "model": "Nano Charger (30W)",
+   "name": "Anker Nano Charger (30W)",
+   "summary": "Ultra-compact USB-C charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "30 W USB-C PD"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 25,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-C8ADFF-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "anker-prime-power-bank-26-250mah-300w",
+   "sku": "VLD-CHG-281B4D",
+   "category": "chargers",
+   "subcategory": "Power banks",
+   "manufacturer": "Anker",
+   "model": "Prime Power Bank (26,250mAh, 300W)",
+   "name": "Anker Prime Power Bank (26,250mAh, 300W)",
+   "summary": "High-output laptop power bank.",
+   "specs": [
+    {
+     "group": "Capacity",
+     "label": "Rated",
+     "value": "26,250 mAh"
+    },
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "300 W total"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Power banks"
+   },
+   "referenceUsd": 179,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "powerbank",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-281B4D-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Standalone lithium-ion battery (UN3480). Restricted on passenger aircraft; ships by sea/road or cargo air with DG handling.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "anker-maggo-power-bank-10k",
+   "sku": "VLD-CHG-0C5937",
+   "category": "chargers",
+   "subcategory": "Power banks",
+   "manufacturer": "Anker",
+   "model": "MagGo Power Bank (10K)",
+   "name": "Anker MagGo Power Bank (10K)",
+   "summary": "Magnetic Qi2 power bank with stand.",
+   "specs": [
+    {
+     "group": "Capacity",
+     "label": "Rated",
+     "value": "10,000 mAh"
+    },
+    {
+     "group": "Wireless",
+     "label": "Standard",
+     "value": "Qi2"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Power banks"
+   },
+   "referenceUsd": 89,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "powerbank",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-0C5937-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Standalone lithium-ion battery (UN3480). Restricted on passenger aircraft; ships by sea/road or cargo air with DG handling.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "belkin-boostcharge-pro-3-in-1-with-qi2-15w",
+   "sku": "VLD-CHG-2C19C8",
+   "category": "chargers",
+   "subcategory": "Wireless chargers",
+   "manufacturer": "Belkin",
+   "model": "BoostCharge Pro 3-in-1 with Qi2 15W",
+   "name": "Belkin BoostCharge Pro 3-in-1 with Qi2 15W",
+   "summary": "Charging stand for phone, watch and earbuds.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Phone",
+     "value": "Up to 15 W (Qi2)"
+    },
+    {
+     "group": "Devices",
+     "label": "Simultaneous",
+     "value": "3"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wireless chargers"
+   },
+   "referenceUsd": 129,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-2C19C8-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "ugreen-nexode-300w-gan-desktop-charger",
+   "sku": "VLD-CHG-A6BCED",
+   "category": "chargers",
+   "subcategory": "Desktop chargers",
+   "manufacturer": "UGREEN",
+   "model": "Nexode 300W GaN Desktop Charger",
+   "name": "UGREEN Nexode 300W GaN Desktop Charger",
+   "summary": "Five-port desktop charging station.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "300 W total"
+    },
+    {
+     "group": "Ports",
+     "label": "Layout",
+     "value": "4× USB-C, 1× USB-A"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Desktop chargers"
+   },
+   "referenceUsd": 169,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-A6BCED-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "ugreen-nexode-100w-usb-c-charger",
+   "sku": "VLD-CHG-DC2D03",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "UGREEN",
+   "model": "Nexode 100W USB-C Charger",
+   "name": "UGREEN Nexode 100W USB-C Charger",
+   "summary": "Four-port GaN charger.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "100 W total"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 69,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-DC2D03-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "samsung-25w-power-adapter",
+   "sku": "VLD-CHG-B1DA93",
+   "category": "chargers",
+   "subcategory": "Wall chargers",
+   "manufacturer": "Samsung",
+   "model": "25W Power Adapter",
+   "name": "Samsung 25W Power Adapter",
+   "summary": "Super Fast Charging USB-C adapter.",
+   "specs": [
+    {
+     "group": "Output",
+     "label": "Max",
+     "value": "25 W USB-C PD (PPS)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Wall chargers"
+   },
+   "referenceUsd": 19,
+   "moq": 50,
+   "orderIncrement": 10,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "charger",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CHG-B1DA93-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sony-playstation-5-pro",
+   "sku": "VLD-CON-8C80C7",
+   "category": "consoles",
+   "subcategory": "Consoles",
+   "manufacturer": "Sony",
+   "model": "PlayStation 5 Pro",
+   "name": "Sony PlayStation 5 Pro",
+   "summary": "PS5 Pro console with 2 TB SSD.",
+   "specs": [
+    {
+     "group": "Storage",
+     "label": "SSD",
+     "value": "2 TB"
+    },
+    {
+     "group": "Video",
+     "label": "Output",
+     "value": "Up to 4K / 8K-capable (title dependent)"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Consoles"
+   },
+   "referenceUsd": 749,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "console",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-8C80C7-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sony-playstation-5-digital-edition-slim",
+   "sku": "VLD-CON-41FF11",
+   "category": "consoles",
+   "subcategory": "Consoles",
+   "manufacturer": "Sony",
+   "model": "PlayStation 5 Digital Edition (Slim)",
+   "name": "Sony PlayStation 5 Digital Edition (Slim)",
+   "summary": "Disc-free PS5 console.",
+   "specs": [
+    {
+     "group": "Storage",
+     "label": "SSD",
+     "value": "825 GB"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Consoles"
+   },
+   "referenceUsd": 499,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "console",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-41FF11-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "sony-dualsense-edge-wireless-controller",
+   "sku": "VLD-CON-A76687",
+   "category": "consoles",
+   "subcategory": "Controllers",
+   "manufacturer": "Sony",
+   "model": "DualSense Edge Wireless Controller",
+   "name": "Sony DualSense Edge Wireless Controller",
+   "summary": "Pro controller for PS5.",
+   "specs": [
+    {
+     "group": "Connectivity",
+     "label": "Pairing",
+     "value": "Wireless, USB-C"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Controllers"
+   },
+   "referenceUsd": 199,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "controller",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-A76687-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "microsoft-xbox-series-x-1tb",
+   "sku": "VLD-CON-73CEB0",
+   "category": "consoles",
+   "subcategory": "Consoles",
+   "manufacturer": "Microsoft",
+   "model": "Xbox Series X (1TB)",
+   "name": "Microsoft Xbox Series X (1TB)",
+   "summary": "Xbox Series X console.",
+   "specs": [
+    {
+     "group": "Storage",
+     "label": "SSD",
+     "value": "1 TB"
+    },
+    {
+     "group": "Video",
+     "label": "Output",
+     "value": "4K"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Consoles"
+   },
+   "referenceUsd": 649,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "console",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-73CEB0-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "microsoft-xbox-wireless-controller",
+   "sku": "VLD-CON-93CD3B",
+   "category": "consoles",
+   "subcategory": "Controllers",
+   "manufacturer": "Microsoft",
+   "model": "Xbox Wireless Controller",
+   "name": "Microsoft Xbox Wireless Controller",
+   "summary": "Wireless controller for Xbox and PC.",
+   "specs": [
+    {
+     "group": "Connectivity",
+     "label": "Pairing",
+     "value": "Xbox Wireless, Bluetooth"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Controllers"
+   },
+   "referenceUsd": 65,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "controller",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-93CD3B-01",
+     "label": "Carbon Black",
+     "color": "Carbon Black",
+     "region": "GLOBAL"
+    },
+    {
+     "sku": "VLD-CON-93CD3B-02",
+     "label": "Robot White",
+     "color": "Robot White",
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "nintendo-switch-2",
+   "sku": "VLD-CON-0DA7D7",
+   "category": "consoles",
+   "subcategory": "Consoles",
+   "manufacturer": "Nintendo",
+   "model": "Switch 2",
+   "name": "Nintendo Switch 2",
+   "summary": "Hybrid home/handheld console.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Size",
+     "value": "7.9-inch"
+    },
+    {
+     "group": "Storage",
+     "label": "Internal",
+     "value": "256 GB"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Consoles"
+   },
+   "referenceUsd": 449,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "handheld",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-0DA7D7-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "valve-steam-deck-oled-1tb",
+   "sku": "VLD-CON-DDF7A0",
+   "category": "consoles",
+   "subcategory": "Handheld PCs",
+   "manufacturer": "Valve",
+   "model": "Steam Deck OLED 1TB",
+   "name": "Valve Steam Deck OLED 1TB",
+   "summary": "Handheld gaming PC with OLED display.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Panel",
+     "value": "7.4-inch HDR OLED"
+    },
+    {
+     "group": "Storage",
+     "label": "SSD",
+     "value": "1 TB"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Handheld PCs"
+   },
+   "referenceUsd": 649,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "handheld",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-DDF7A0-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "asus-rog-xbox-ally-x",
+   "sku": "VLD-CON-D5766B",
+   "category": "consoles",
+   "subcategory": "Handheld PCs",
+   "manufacturer": "ASUS",
+   "model": "ROG Xbox Ally X",
+   "name": "ASUS ROG Xbox Ally X",
+   "summary": "Windows handheld gaming PC.",
+   "specs": [
+    {
+     "group": "Display",
+     "label": "Size",
+     "value": "7-inch 120 Hz"
+    },
+    {
+     "group": "Storage",
+     "label": "SSD",
+     "value": "1 TB"
+    }
+   ],
+   "attributes": {
+    "formFactor": "Handheld PCs"
+   },
+   "referenceUsd": 999,
+   "moq": 3,
+   "orderIncrement": 1,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "handheld",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-D5766B-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
+   "condition": "NEW"
+  },
+  {
+   "slug": "meta-quest-3-512gb",
+   "sku": "VLD-CON-85B26B",
+   "category": "consoles",
+   "subcategory": "VR headsets",
+   "manufacturer": "Meta",
+   "model": "Quest 3 512GB",
+   "name": "Meta Quest 3 512GB",
+   "summary": "Mixed-reality headset.",
+   "specs": [
+    {
+     "group": "Storage",
+     "label": "Internal",
+     "value": "512 GB"
+    }
+   ],
+   "attributes": {
+    "formFactor": "VR headsets"
+   },
+   "referenceUsd": 499,
+   "moq": 10,
+   "orderIncrement": 5,
+   "availability": "INDICATIVE_AVAILABLE",
+   "leadTime": "Indicative 5–10 business days after payment; confirmed per order",
+   "imageKey": "headset",
+   "warrantyInfo": "Manufacturer warranty terms depend on region and sales channel — to be confirmed per order.",
+   "variants": [
+    {
+     "sku": "VLD-CON-85B26B-01",
+     "label": "Standard",
+     "color": null,
+     "region": "GLOBAL"
+    }
+   ],
+   "regionCompatibility": "Plug type, language and regional features vary by market version. Confirm the destination market before ordering.",
+   "shippingRestrictions": "Contains lithium-ion battery (UN3481, packed with/in equipment). Air-freight dangerous-goods rules apply.",
    "condition": "NEW"
   }
  ]

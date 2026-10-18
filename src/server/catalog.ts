@@ -5,9 +5,10 @@ import { can, type Actor } from "@/lib/auth";
 import { resolveUnitPrice, type Tier } from "@/lib/pricing";
 import { convertMinorInverse, isCurrency, type Currency } from "@/lib/money";
 import { getRate } from "@/lib/fx";
+import { DEPARTMENTS } from "@/lib/catalog-meta";
 
 export type CatalogQuery = {
-  q?: string; category?: string; manufacturer?: string[]; condition?: string; availability?: string;
+  q?: string; dept?: string; category?: string; manufacturer?: string[]; condition?: string; availability?: string;
   minPrice?: string; maxPrice?: string; currency?: string; maxMoq?: string; storage?: string; ram?: string;
   cpu?: string; gpu?: string; refresh?: string; screen?: string; sort?: string; page?: string;
 };
@@ -30,6 +31,12 @@ export async function searchCatalog(qs: CatalogQuery, actor: Actor | null) {
   if (qs.category) {
     category = (await db.select().from(categories).where(eq(categories.slug, qs.category)).limit(1))[0];
     if (category) where.push(eq(products.categoryId, category.id));
+  }
+  const department = !category && qs.dept ? DEPARTMENTS.find((d) => d.slug === qs.dept) : undefined;
+  let deptCatIds: number[] = [];
+  if (department) {
+    deptCatIds = (await db.select({ id: categories.id }).from(categories).where(inArray(categories.slug, [...department.categories]))).map((r) => r.id);
+    where.push(deptCatIds.length ? inArray(products.categoryId, deptCatIds) : sql`false`);
   }
   const mfrs = (qs.manufacturer ?? []).filter(Boolean).slice(0, 20);
   if (mfrs.length) where.push(inArray(products.manufacturer, mfrs));
@@ -76,17 +83,17 @@ export async function searchCatalog(qs: CatalogQuery, actor: Actor | null) {
       categoryId: products.categoryId, isActive: products.isActive, purchasable: products.purchasable,
     }).from(products).where(cond).orderBy(...orderBy).limit(PAGE_SIZE).offset((page - 1) * PAGE_SIZE),
     db.select({ n: sql<number>`count(*)::int` }).from(products).where(cond),
-    db.selectDistinct({ m: products.manufacturer }).from(products).where(and(eq(products.isActive, true), category ? eq(products.categoryId, category.id) : undefined)).orderBy(asc(products.manufacturer)),
+    db.selectDistinct({ m: products.manufacturer }).from(products).where(and(eq(products.isActive, true), category ? eq(products.categoryId, category.id) : deptCatIds.length ? inArray(products.categoryId, deptCatIds) : undefined)).orderBy(asc(products.manufacturer)),
   ]);
 
   const facetAttr = async (key: string) => {
-    const r = await db.execute(sql`SELECT DISTINCT (attributes->>${key})::numeric AS v FROM products WHERE is_active AND attributes ? ${key} ${category ? sql`AND category_id = ${category.id}` : sql``} ORDER BY 1`);
+    const r = await db.execute(sql`SELECT DISTINCT (attributes->>${key})::numeric AS v FROM products WHERE is_active AND attributes ? ${key} ${category ? sql`AND category_id = ${category.id}` : deptCatIds.length ? sql`AND category_id IN (${sql.join(deptCatIds.map((i) => sql`${i}`), sql`, `)})` : sql``} ORDER BY 1`);
     return (r.rows as { v: string }[]).map((x) => Number(x.v)).filter((v) => Number.isFinite(v));
   };
   const [storageOpts, ramOpts, refreshOpts] = await Promise.all([facetAttr("storageGb"), facetAttr("ramGb"), facetAttr("refreshHz")]);
 
   return {
-    category, page, total: countRow[0].n, pages: Math.max(1, Math.ceil(countRow[0].n / PAGE_SIZE)), sort, showPrices,
+    category, department, page, total: countRow[0].n, pages: Math.max(1, Math.ceil(countRow[0].n / PAGE_SIZE)), sort, showPrices,
     items: rows.map((r) => ({ ...r, wholesaleCents: showPrices ? r.wholesaleCents : null, orderable: isOrderableProduct(r) })),
     facets: { manufacturers: facetMfr.map((x) => x.m), storage: storageOpts, ram: ramOpts, refresh: refreshOpts },
   };

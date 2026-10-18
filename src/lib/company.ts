@@ -7,5 +7,10 @@ export function companyInfo() {
     email: process.env.COMPANY_SUPPORT_EMAIL || null,
     phone: process.env.COMPANY_SUPPORT_PHONE || null,
     address: process.env.COMPANY_ADDRESS || null,
+    accessibility: {
+      name: process.env.ACCESSIBILITY_COORDINATOR_NAME || null,
+      email: process.env.ACCESSIBILITY_COORDINATOR_EMAIL || null,
+      phone: process.env.ACCESSIBILITY_COORDINATOR_PHONE || null,
+    },
   };
 }

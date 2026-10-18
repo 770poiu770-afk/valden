@@ -3,9 +3,19 @@
 This deploys Valden as a **new, separate Railway project** with a Postgres database, a persistent
 volume for verification documents, and a public HTTPS domain — with PayPal in **Sandbox** mode only.
 
-The repository is Railway-ready: `railway.json` selects the Dockerfile build, runs database
-migrations as a **pre-deploy command** (a failed migration never receives traffic), starts Next.js on
-Railway's `$PORT`, and health-checks `/api/health` (which also checks the database).
+Railway no longer reads `railway.json` (Config as Code is deprecated), so these settings are set
+**on the `web` service itself** (Settings → Deploy), and were applied that way for `valden/staging`:
+
+| Setting | Value |
+| --- | --- |
+| Dockerfile path | `Dockerfile` |
+| Pre-deploy command | `npx tsx scripts/release.ts` — migrations, reference data, new catalog listings, first admin |
+| Start command | `/bin/sh -c "exec npx next start -H 0.0.0.0 -p ${PORT:-3000}"` |
+| Healthcheck path / timeout | `/api/health` / 120 s |
+| Restart policy | On failure, 5 retries |
+
+`railway.json` is kept in the repository only as a record of these values.
+A failed pre-deploy step never receives traffic. `/api/health` also checks the database.
 
 ---
 
@@ -124,15 +134,10 @@ build → pre-deploy (`Migrations applied.`) → health check `/api/health` → 
    one the app listens on (the value of `$PORT`, shown in the logs as `Network: http://0.0.0.0:<port>`).
 2. Set `APP_URL` to that exact URL and redeploy.
 3. Open `https://<domain>/api/health` → `{"status":"ok"}`.
-4. Seed reference data and the sample catalog, and create your admin. With the CLI linked to the
-   valden project and web service (`railway status` first!):
-   ```bash
-   railway ssh -- npm run db:seed
-   railway ssh -- sh -c 'ADMIN_PASSWORD="choose-a-strong-password-12+chars" npm run admin:create -- --email you@yourdomain.com --name "Your Name"'
-   ```
-   The seed is idempotent; `--demo` accounts are refused in production by design.
-   Tip: put a space before the second command or clear shell history afterwards, so the password
-   is not saved in your shell history.
+4. Reference data and the catalog are loaded automatically by the pre-deploy step. For the first
+   admin, set `BOOTSTRAP_ADMIN_EMAIL` (and optionally `BOOTSTRAP_ADMIN_NAME`) on the web service and
+   redeploy: the deploy log then shows a single-use, 24-hour **set your password** link. No password
+   is ever stored in variables or logs. (Alternatively: `railway ssh -- npm run admin:create -- --email … --name …`.)
 5. Sign in at `https://<domain>/login` → you land in **/admin**.
 
 (Optional) A custom domain: **Networking → Custom Domain**, add the CNAME record Railway shows at

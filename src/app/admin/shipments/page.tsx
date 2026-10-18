@@ -16,9 +16,9 @@ export default async function Ships() {
     <div className="space-y-8">
       <PageHeader title="Shipments" intro="Manual fulfillment workflow. No carrier integration is configured: enter carrier, tracking and estimates as issued by your logistics provider." />
       <section><h2 className="wide mb-3 text-lg">Paid orders to fulfil ({toShip.length})</h2>
-        <div className="panel overflow-x-auto"><table className="tbl"><thead><tr><th>Order</th><th>Status</th><th>Placed</th></tr></thead><tbody>{toShip.map((o) => <tr key={o.id}><td><Link className="link" href={`/admin/orders/${o.id}`}>{o.number}</Link></td><td><StatusPill status={o.status} /></td><td>{fmtDate(o.placedAt)}</td></tr>)}</tbody></table></div></section>
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl"><thead><tr><th>Order</th><th>Status</th><th>Placed</th></tr></thead><tbody>{toShip.map((o) => <tr key={o.id}><td><Link className="link" href={`/admin/orders/${o.id}`}>{o.number}</Link></td><td><StatusPill status={o.status} /></td><td>{fmtDate(o.placedAt)}</td></tr>)}</tbody></table></div></section>
       <section><h2 className="wide mb-3 text-lg">All shipments</h2>
-        <div className="panel overflow-x-auto"><table className="tbl min-w-[800px]"><thead><tr><th>Reference</th><th>Order</th><th>Status</th><th>Carrier</th><th>Tracking</th><th>Estimate</th><th>Created</th></tr></thead>
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[800px]"><thead><tr><th>Reference</th><th>Order</th><th>Status</th><th>Carrier</th><th>Tracking</th><th>Estimate</th><th>Created</th></tr></thead>
           <tbody>{rows.map(({ s, number }) => <tr key={s.id}><td className="num">{s.reference}</td><td><Link className="link" href={`/admin/orders/${s.orderId}`}>{number}</Link></td><td><StatusPill status={s.status} /></td><td>{s.carrier ?? "—"}</td><td className="num text-xs">{s.trackingNumber ?? "—"}</td><td className="text-xs">{s.estimatedDelivery ? `${s.estimatedDelivery}${s.estimateConfirmed ? "" : " (prov.)"}` : "—"}</td><td className="text-xs">{fmtDate(s.createdAt)}</td></tr>)}</tbody></table></div></section>
     </div>
   );

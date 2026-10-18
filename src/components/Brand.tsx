@@ -17,7 +17,7 @@ export function Logo({ inverted = false, href = "/" }: { inverted?: boolean; hre
   return (
     <Link href={href} className="flex items-center gap-2.5" aria-label="Valden — home">
       <Mark inverted={inverted} />
-      <span className={`text-[16px] sm:text-[19px] leading-none ${inverted ? "text-white" : "text-deep"}`} style={{ fontStretch: "125%", fontWeight: 800, letterSpacing: "0.04em" }}>
+      <span className={`max-[359px]:sr-only text-[16px] sm:text-[19px] leading-none ${inverted ? "text-white" : "text-deep"}`} style={{ fontStretch: "125%", fontWeight: 800, letterSpacing: "0.04em" }}>
         VALDEN
       </span>
     </Link>

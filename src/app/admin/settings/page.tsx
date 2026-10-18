@@ -27,7 +27,7 @@ export default async function Settings() {
           <input name="effectiveAt" type="datetime-local" className="input" aria-label="Effective from" />
           <button className="btn-deep">Record rate</button>
         </ActionForm>
-        <div className="mt-4 overflow-x-auto"><table className="tbl min-w-[560px]"><thead><tr><th>Pair</th><th className="text-right">Rate</th><th>Source</th><th>Effective</th><th /></tr></thead>
+        <div className="mt-4 overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[560px]"><thead><tr><th>Pair</th><th className="text-right">Rate</th><th>Source</th><th>Effective</th><th /></tr></thead>
           <tbody>{rates.map((r) => <tr key={r.id}><td>{r.base}→{r.quote}</td><td className="num text-right">{Number(r.rate)}</td><td className="text-xs">{r.source}</td><td className="text-xs">{fmtDate(r.effectiveAt, true)}</td><td>{r.isSample ? <Badge tone="warn">Sample</Badge> : <Badge tone="ok">Recorded</Badge>}</td></tr>)}</tbody></table></div>
       </Card>
       <div className="grid gap-6 lg:grid-cols-2">

@@ -8,12 +8,13 @@ import { createHash } from "node:crypto";
 import { mobile } from "./catalog/mobile";
 import { computers } from "./catalog/computers";
 import { components, creatorAndAccessories } from "./catalog/components";
+import { audio, chargers, consoles, smartwatches } from "./catalog/consumer";
 import type { CatalogItem } from "./catalog/types";
 
 const CAT_CODE: Record<string, string> = {
   iphone: "IPH", galaxy: "GLX", "gaming-desktops": "GDT", "custom-gaming-pcs": "BTO", workstations: "WKS", laptops: "LAP",
   "graphics-cards": "GPU", "cpus-motherboards": "CPU", "memory-storage": "MEM", monitors: "MON", tablets: "TAB",
-  networking: "NET", creator: "CRE", components: "ACC",
+  networking: "NET", creator: "CRE", components: "ACC", audio: "AUD", smartwatches: "WCH", chargers: "CHG", consoles: "CON",
 };
 
 export function slugify(s: string) {
@@ -21,7 +22,7 @@ export function slugify(s: string) {
 }
 const hash = (s: string, n = 6) => createHash("sha1").update(s).digest("hex").slice(0, n).toUpperCase();
 
-const items: CatalogItem[] = [...mobile(), ...computers(), ...components(), ...creatorAndAccessories()];
+const items: CatalogItem[] = [...mobile(), ...computers(), ...components(), ...creatorAndAccessories(), ...audio(), ...smartwatches(), ...chargers(), ...consoles()];
 const seen = new Set<string>();
 const out = items.map((it) => {
   let slug = slugify(it.name);

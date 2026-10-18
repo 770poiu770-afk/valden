@@ -7,6 +7,7 @@ import { currentActor } from "@/server/http";
 import { getSettings } from "@/lib/settings";
 import { getRate } from "@/lib/fx";
 import { convertMinor, formatMoney } from "@/lib/money";
+import { DEPARTMENTS } from "@/lib/catalog-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,11 @@ export default async function Home() {
   ]);
   const rows = manifest.rows as { slug: string; name: string; n: number; moq: number }[];
   const total = rows.reduce((s, r) => s + r.n, 0);
+  const deptRows = DEPARTMENTS.map((d) => {
+    const rs = rows.filter((r) => (d.categories as readonly string[]).includes(r.slug));
+    return { slug: d.slug, name: d.name, n: rs.reduce((s, r) => s + r.n, 0), moq: rs.length ? Math.min(...rs.map((r) => r.moq)) : null };
+  });
+  const depts = DEPARTMENTS.map((d) => ({ ...d, n: cats.filter((c) => (d.categories as readonly string[]).includes(c.slug)).reduce((s, c) => s + c.n, 0) }));
   const cur = "USD" as const;
   const rate = await getRate(cur);
   const [phones, gpus, ws] = await Promise.all([
@@ -66,16 +72,15 @@ export default async function Home() {
               <p className="num text-xs text-steel-500">{new Date().toISOString().slice(0, 10)}</p>
             </div>
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs text-steel-500"><th className="px-5 py-2 font-medium">Line</th><th className="px-2 py-2 text-right font-medium">Listings</th><th className="px-5 py-2 text-right font-medium">MOQ from</th></tr></thead>
+              <thead><tr className="text-left text-xs text-steel-500"><th scope="col" className="px-5 py-2 font-medium">Department</th><th className="px-2 py-2 text-right font-medium">Listings</th><th className="px-5 py-2 text-right font-medium">MOQ from</th></tr></thead>
               <tbody>
-                {rows.slice(0, 9).map((r) => (
+                {deptRows.map((r) => (
                   <tr key={r.slug} className="border-t border-line/70">
-                    <td className="px-5 py-1.5"><Link href={`/catalog?category=${r.slug}`} className="hover:underline">{r.name}</Link></td>
+                    <th scope="row" className="px-5 py-1.5 text-left font-normal"><Link href={`/catalog?dept=${r.slug}`} className="hover:underline">{r.name}</Link></th>
                     <td className="num px-2 py-1.5 text-right">{r.n}</td>
-                    <td className="num px-5 py-1.5 text-right">{r.moq}</td>
+                    <td className="num px-5 py-1.5 text-right">{r.moq ?? "—"}</td>
                   </tr>
                 ))}
-                <tr className="border-t border-line/70 text-steel-500"><td className="px-5 py-1.5" colSpan={3}>+ {rows.length - 9} further lines</td></tr>
               </tbody>
               <tfoot><tr className="border-t-2 border-deep font-semibold text-deep-900"><td className="px-5 py-2.5">Total listings</td><td className="num px-2 py-2.5 text-right">{total}</td><td /></tr></tfoot>
             </table>
@@ -86,18 +91,20 @@ export default async function Home() {
       {/* Categories */}
       <section className="container-page pt-16">
         <div className="mb-6 flex items-end justify-between gap-4">
-          <h2 className="wide text-2xl">Product lines</h2>
+          <h2 className="wide text-2xl">Shop by department</h2>
           <Link href="/categories" className="link text-sm">All categories</Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-          {cats.map((c) => (
-            <Link key={c.slug} href={`/catalog?category=${c.slug}`} className="group rounded-md border border-line bg-white p-2 hover:border-deep">
-              <ProductArt kind={c.imageKey} className="aspect-[4/3] w-full rounded-sm" label={c.name} />
-              <p className="mt-2 px-1 text-[13px] font-semibold leading-tight text-deep-900">{c.name}</p>
-              <p className="num px-1 pb-1 text-xs text-steel-500">{c.n} listings</p>
-            </Link>
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {depts.map((d) => (
+            <li key={d.slug}>
+              <Link href={`/catalog?dept=${d.slug}`} className="group block h-full rounded-md border border-line bg-white p-2 hover:border-deep">
+                <ProductArt kind={d.imageKey} className="aspect-[4/3] w-full rounded-sm" decorative />
+                <span className="mt-2 block px-1 text-[14px] font-semibold leading-tight text-deep-900 group-hover:underline">{d.name}</span>
+                <span className="num block px-1 pb-1 text-xs text-steel-500">{d.n} listings</span>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* High-value collections — compact lists rather than repeated cards */}

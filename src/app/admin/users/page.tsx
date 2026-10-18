@@ -21,7 +21,7 @@ export default async function Users() {
         <select name="role" className="input">{staffRoles.filter((r) => r.key !== "SUPER_ADMIN" || a.roleKey === "SUPER_ADMIN").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
         <button className="btn-deep">Add staff user</button>
       </ActionForm>
-      <div className="panel overflow-x-auto"><table className="tbl min-w-[960px]"><thead><tr><th>User</th><th>Company</th><th>Role</th><th>Status</th><th>Last sign-in</th><th /></tr></thead>
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[960px]"><thead><tr><th>User</th><th>Company</th><th>Role</th><th>Status</th><th>Last sign-in</th><th /></tr></thead>
         <tbody>{rows.map(({ u, role, co }) => (
           <tr key={u.id}><td>{u.fullName}<p className="text-xs text-steel-500">{u.email}</p></td><td className="text-xs">{co ?? "Staff"}</td><td className="text-xs">{role.name}</td><td className="text-xs">{u.isActive ? "Active" : "Deactivated"}{u.lockedUntil && u.lockedUntil > new Date() ? " (locked)" : ""}</td><td className="text-xs">{u.lastLoginAt ? fmtDate(u.lastLoginAt, true) : "Never"}</td>
             <td>{u.id !== a.userId && (

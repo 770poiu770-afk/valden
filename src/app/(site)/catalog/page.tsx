@@ -2,11 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/ProductCard";
 import { CompareToggle } from "@/components/client/CompareToggle";
+import { FilterPanel } from "@/components/client/FilterPanel";
 import { Empty, Notice } from "@/components/ui";
 import { searchCatalog, type CatalogQuery } from "@/server/catalog";
 import { currentActor } from "@/server/http";
 import { displayCurrency } from "@/lib/buyer-currency";
-import { AVAILABILITY_LABEL, CATEGORIES } from "@/lib/catalog-meta";
+import { AVAILABILITY_LABEL, CATEGORIES, DEPARTMENTS, departmentOf } from "@/lib/catalog-meta";
 
 export const metadata: Metadata = { title: "Wholesale catalog" };
 export const dynamic = "force-dynamic";
@@ -18,14 +19,15 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
   const sp = await searchParams;
   const actor = await currentActor();
   const q: CatalogQuery = {
-    q: one(sp.q), category: one(sp.category), condition: one(sp.condition), availability: one(sp.availability),
+    q: one(sp.q), dept: one(sp.dept), category: one(sp.category), condition: one(sp.condition), availability: one(sp.availability),
     manufacturer: ([] as string[]).concat(sp.manufacturer ?? []), minPrice: one(sp.minPrice), maxPrice: one(sp.maxPrice),
     currency: one(sp.currency), maxMoq: one(sp.maxMoq), storage: one(sp.storage), ram: one(sp.ram), cpu: one(sp.cpu), gpu: one(sp.gpu),
     refresh: one(sp.refresh), sort: one(sp.sort), page: one(sp.page),
   };
   const { currency, rate } = await displayCurrency(actor, q.currency);
   const res = await searchCatalog({ ...q, currency }, actor);
-  const title = res.category?.name ?? (q.q ? `Results for “${q.q}”` : "Wholesale catalog");
+  const dept = res.department ?? (res.category ? departmentOf(res.category.slug) : undefined);
+  const title = res.category?.name ?? res.department?.name ?? (q.q ? `Results for “${q.q}”` : "Wholesale catalog");
 
   const pageHref = (page: number) => {
     const u = new URLSearchParams();
@@ -39,12 +41,22 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
     <div className="container-page py-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <nav className="mb-1 text-sm text-steel-500"><Link href="/catalog" className="hover:text-deep">Catalog</Link>{res.category && <> / {res.category.name}</>}</nav>
+          <nav aria-label="Breadcrumb" className="mb-1 text-sm text-steel-500"><Link href="/catalog" className="hover:text-deep">Catalog</Link>{dept && <> / {res.category ? <Link href={`/catalog?dept=${dept.slug}`} className="hover:text-deep">{dept.name}</Link> : <span aria-current="page">{dept.name}</span>}</>}{res.category && <> / <span aria-current="page">{res.category.name}</span></>}</nav>
           <h1 className="wide text-2xl sm:text-3xl">{title}</h1>
-          {res.category && <p className="mt-1 max-w-[70ch] text-steel-500">{res.category.description}</p>}
+          {(res.category ?? res.department) && <p className="mt-1 max-w-[70ch] text-steel-500">{(res.category ?? res.department)!.description}</p>}
         </div>
         <p className="num text-sm text-steel-500">{res.total} listings</p>
       </div>
+
+      <nav aria-label="Departments" className="-mx-4 mb-6 overflow-x-auto px-4">
+        <ul className="flex gap-2">
+          <li><Link href="/catalog" aria-current={!dept ? "page" : undefined} className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium ${!dept ? "border-deep bg-deep text-white" : "border-line bg-white text-steel-600 hover:border-deep hover:text-deep"}`}>All</Link></li>
+          {DEPARTMENTS.map((d) => {
+            const on = dept?.slug === d.slug;
+            return <li key={d.slug}><Link href={`/catalog?dept=${d.slug}`} aria-current={on ? "page" : undefined} className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium ${on ? "border-deep bg-deep text-white" : "border-line bg-white text-steel-600 hover:border-deep hover:text-deep"}`}>{d.name}</Link></li>;
+          })}
+        </ul>
+      </nav>
 
       {!res.showPrices && (
         <div className="mb-6"><Notice title="Wholesale prices are shown to approved trade accounts">
@@ -54,16 +66,28 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
 
       <div className="grid gap-8 lg:grid-cols-[17rem_1fr]">
         {/* Filters: a plain GET form, works without JavaScript */}
-        <form method="get" action="/catalog" className="space-y-5 self-start rounded-md border border-line bg-white p-4 text-sm lg:sticky lg:top-4" aria-label="Filter products">
+        <FilterPanel activeCount={[q.q, q.category, q.condition, q.availability, q.maxMoq, q.storage, q.ram, q.cpu, q.gpu, q.refresh, q.minPrice, q.maxPrice].filter(Boolean).length + (q.manufacturer?.length ?? 0)}>
+        <form method="get" action="/catalog" className="space-y-5 rounded-md border border-line bg-white p-4 text-sm" aria-label="Filter products">
           <div>
             <label htmlFor="q" className="field-label">Search</label>
             <input id="q" name="q" defaultValue={q.q} placeholder="Model, SKU, manufacturer" className="input" />
           </div>
           <div>
+            <label htmlFor="dept" className="field-label">Department</label>
+            <select id="dept" name="dept" defaultValue={dept?.slug ?? ""} className="input">
+              <option value="">All departments</option>
+              {DEPARTMENTS.map((d) => <option key={d.slug} value={d.slug}>{d.name}</option>)}
+            </select>
+          </div>
+          <div>
             <label htmlFor="category" className="field-label">Category</label>
             <select id="category" name="category" defaultValue={q.category ?? ""} className="input">
-              <option value="">All categories</option>
-              {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+              <option value="">All categories{dept ? ` in ${dept.name}` : ""}</option>
+              {DEPARTMENTS.filter((d) => !dept || d.slug === dept.slug).map((d) => (
+                <optgroup key={d.slug} label={d.name}>
+                  {CATEGORIES.filter((c) => (d.categories as readonly string[]).includes(c.slug)).map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </optgroup>
+              ))}
             </select>
           </div>
           <fieldset>
@@ -147,6 +171,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
             <Link href="/catalog" className="btn-outline">Reset</Link>
           </div>
         </form>
+        </FilterPanel>
 
         <div>
           {rate?.isSample && res.showPrices && currency !== "USD" && (

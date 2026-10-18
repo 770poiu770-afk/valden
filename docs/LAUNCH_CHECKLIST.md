@@ -38,6 +38,12 @@
 - [ ] Scheduled cleanup of expired sessions and old rate-limit rows.
 - [ ] First super admin created on the server; staff accounts created with least-privilege roles.
 
+## Accessibility
+
+- [ ] Professional accessibility audit (IS 5568 / WCAG 2.1 AA) including screen readers (NVDA, JAWS, VoiceOver, TalkBack).
+- [ ] Appoint an accessibility coordinator; set `ACCESSIBILITY_COORDINATOR_*`; update `/accessibility` with the audit result and date.
+- [ ] Re-run `npx tsx scripts/a11y-audit.ts` after design changes (automated first pass only).
+
 ## Verification
 
 - [ ] `npm test` and `npm run test:e2e` pass against staging.

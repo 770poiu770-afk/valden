@@ -17,7 +17,7 @@ import { createProduct, deleteContractPrice, recordReferencePrice, setContractPr
 import { exportPricesCsv, importPricesCsv, importProducts, parseCatalogCsv, recomputeAllPrices, CATALOG_CSV_COLUMNS } from "@/server/catalog-import";
 import { issueOffer, startReview } from "@/server/quotes";
 import { addOrderNote, cancelOrder, confirmOrder, createShipment, rejectOrder, setProcessing, updateShipment } from "@/server/orders";
-import { issueRefund, recordManualPayment } from "@/server/payments";
+import { issueRefund, reconcilePayPalPayment, recordManualPayment } from "@/server/payments";
 
 type H = (a: Actor, p: string[], body: () => Promise<Record<string, unknown>>, req: NextRequest) => Promise<unknown>;
 const uuid = (s: string) => { if (!/^[0-9a-f-]{36}$/i.test(s)) throw notFound(); return s; };
@@ -104,6 +104,7 @@ const POST_ROUTES: [RegExp, H][] = [
   [/^orders\/([^/]+)\/processing$/, async (a, [id]) => { await setProcessing(a, uuid(id)); return {}; }],
   [/^orders\/([^/]+)\/note$/, async (a, [id], body) => { const b = z.object({ message: z.string(), visibleToBuyer: z.coerce.boolean().default(false) }).parse(await body()); await addOrderNote(a, uuid(id), b.message, b.visibleToBuyer); return {}; }],
   [/^orders\/([^/]+)\/manual-payment$/, async (a, [id], body) => { const b = z.object({ amount: z.string(), reference: z.string(), note: z.string().optional() }).parse(await body()); await recordManualPayment(a, uuid(id), b); return { message: "Payment recorded." }; }],
+  [/^payments\/([^/]+)\/reconcile$/, async (a, [id]) => { const r = await reconcilePayPalPayment(a, uuid(id)); return { message: `Checked with PayPal: ${r.status.toLowerCase()}.` }; }],
   [/^orders\/([^/]+)\/refunds$/, async (a, [id], body) => { const b = z.object({ amount: z.string(), reason: z.string(), manualReference: z.string().optional() }).parse(await body()); const r = await issueRefund(a, uuid(id), b); return { message: `Refund ${r.status.toLowerCase()}.` }; }],
   [/^orders\/([^/]+)\/shipments$/, async (a, [id], body) => {
     const b = await body();

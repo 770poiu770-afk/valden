@@ -54,7 +54,7 @@ export default async function Pricing() {
       </section>
       <section>
         <h2 className="wide mb-3 text-lg">Products needing a pricing decision</h2>
-        <div className="panel overflow-x-auto"><table className="tbl min-w-[720px]"><thead><tr><th>Product</th><th className="text-right">Reference</th><th className="text-right">Wholesale</th><th>State</th><th>Note</th></tr></thead>
+        <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[720px]"><thead><tr><th>Product</th><th className="text-right">Reference</th><th className="text-right">Wholesale</th><th>State</th><th>Note</th></tr></thead>
           <tbody>{flagged.map((p) => <tr key={p.id}><td><Link className="link" href={`/admin/products/${p.id}`}>{p.name}</Link></td><td className="text-right"><Money cents={p.referencePriceCents} currency="USD" /></td><td className="text-right"><Money cents={p.wholesaleCents} currency="USD" /></td><td><StatusPill status={p.pricingFlag} /></td><td className="text-xs text-steel-500">{p.pricingNote}</td></tr>)}</tbody></table></div>
       </section>
     </div>

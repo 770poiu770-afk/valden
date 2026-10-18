@@ -24,12 +24,12 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
       <PageHeader title="Products & SKUs" actions={<Link href="/admin/products/new" className="btn-deep">New product</Link>} />
       <form className="mb-4 flex flex-wrap gap-2">
         <input name="q" defaultValue={sp.q} placeholder="Search name, SKU" className="input w-64" />
-        <select name="category" defaultValue={sp.category ?? ""} className="input w-56"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>
-        <select name="flag" defaultValue={sp.flag ?? ""} className="input w-48"><option value="">Any pricing state</option><option value="NONE">Standard premium</option><option value="FALLBACK_POLICY">Fallback policy</option><option value="NEEDS_REVIEW">Needs review</option><option value="OVERRIDE">Override</option></select>
-        <select name="active" defaultValue={sp.active ?? ""} className="input w-44"><option value="">All listings</option><option value="sale">Activated for sale</option><option value="inactive">Inactive</option></select>
+        <select name="category" aria-label="Category" defaultValue={sp.category ?? ""} className="input w-56"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>
+        <select name="flag" aria-label="Pricing state" defaultValue={sp.flag ?? ""} className="input w-48"><option value="">Any pricing state</option><option value="NONE">Standard premium</option><option value="FALLBACK_POLICY">Fallback policy</option><option value="NEEDS_REVIEW">Needs review</option><option value="OVERRIDE">Override</option></select>
+        <select name="active" aria-label="Sale status" defaultValue={sp.active ?? ""} className="input w-44"><option value="">All listings</option><option value="sale">Activated for sale</option><option value="inactive">Inactive</option></select>
         <button className="btn-deep">Filter</button>
       </form>
-      <div className="panel overflow-x-auto"><table className="tbl min-w-[960px]">
+      <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[960px]">
         <thead><tr><th>Product</th><th>Category</th><th className="text-right">Reference</th><th className="text-right">Wholesale</th><th>Pricing</th><th className="text-right">MOQ</th><th>Availability</th><th>Sale</th></tr></thead>
         <tbody>{rows.map(({ p, cat }) => (
           <tr key={p.id}>
