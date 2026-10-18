@@ -10,10 +10,11 @@ import { displayCurrency } from "@/lib/buyer-currency";
 import { AVAILABILITY_LABEL, CATEGORIES, DEPARTMENTS, departmentOf } from "@/lib/catalog-meta";
 import { AVAILABILITY_HE, categoryText, departmentText } from "@/lib/labels";
 import { getT } from "@/server/locale";
+import { getSettings } from "@/lib/settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
-  return { title: t("Wholesale catalog", "קטלוג סיטונאי") };
+  return { title: t("Catalog", "קטלוג") };
 }
 export const dynamic = "force-dynamic";
 
@@ -31,11 +32,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
     refresh: one(sp.refresh), sort: one(sp.sort), page: one(sp.page),
   };
   const { currency, rate } = await displayCurrency(actor, q.currency);
-  const res = await searchCatalog({ ...q, currency }, actor);
+  const [res, settings] = await Promise.all([searchCatalog({ ...q, currency }, actor), getSettings()]);
+  const enforceMoq = settings.orderRules.enforceMoq;
   const dept = res.department ?? (res.category ? departmentOf(res.category.slug) : undefined);
   const deptT = dept ? departmentText(dept, l) : undefined;
   const catT = res.category ? categoryText(res.category, l) : undefined;
-  const title = catT?.name ?? (res.department ? deptT?.name : undefined) ?? (q.q ? t(`Results for “${q.q}”`, `תוצאות עבור „${q.q}”`) : t("Wholesale catalog", "קטלוג סיטונאי"));
+  const title = catT?.name ?? (res.department ? deptT?.name : undefined) ?? (q.q ? t(`Results for “${q.q}”`, `תוצאות עבור „${q.q}”`) : t("Catalog", "קטלוג"));
   const description = catT?.description ?? (res.department ? deptT?.description : undefined);
 
   const pageHref = (page: number) => {
@@ -67,14 +69,6 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
           })}
         </ul>
       </nav>
-
-      {!res.showPrices && (
-        <div className="mb-6"><Notice title={t("Wholesale prices are shown to approved trade accounts", "מחירי סיטונאות מוצגים לחשבונות עסקיים מאושרים")}>
-          {actor ? t("Your account is awaiting verification. Prices and ordering unlock as soon as it is approved.", "החשבון שלכם ממתין לאימות. מחירים והזמנות ייפתחו מיד לאחר האישור.") : l === "he"
-            ? <><Link className="link" href="/register">רשמו את העסק</Link> או <Link className="link" href="/login">היכנסו</Link> כדי לראות מחירי יחידה, מדרגות כמות ומחירי חוזה.</>
-            : <> <Link className="link" href="/register">Register your business</Link> or <Link className="link" href="/login">sign in</Link> to see unit prices, quantity breaks and contract pricing.</>}
-        </Notice></div>
-      )}
 
       <div className="grid gap-8 lg:grid-cols-[17rem_1fr]">
         {/* Filters: a plain GET form, works without JavaScript */}
@@ -117,10 +111,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
                 <option value="">{any}</option><option value="NEW">{t("New", "חדש")}</option><option value="REFURBISHED">{t("Refurbished", "מחודש")}</option><option value="USED">{t("Used", "משומש")}</option>
               </select>
             </div>
+            {enforceMoq && (
             <div>
               <label htmlFor="maxMoq" className="field-label">{t("MOQ up to", "מינימום עד")}</label>
               <input id="maxMoq" name="maxMoq" inputMode="numeric" pattern="\d*" defaultValue={q.maxMoq} className="input" />
             </div>
+            )}
           </div>
           <div>
             <label htmlFor="availability" className="field-label">{t("Availability", "זמינות")}</label>
@@ -166,7 +162,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
             <div>
               <label htmlFor="sort" className="field-label">{t("Sort", "מיון")}</label>
               <select id="sort" name="sort" defaultValue={res.sort} className="input">
-                <option value="featured">{t("Featured", "מומלצים")}</option><option value="newest">{t("Newest", "החדשים ביותר")}</option><option value="name">{t("Name", "שם")}</option><option value="moq">{t("Lowest MOQ", "המינימום הנמוך ביותר")}</option>
+                <option value="featured">{t("Featured", "מומלצים")}</option><option value="newest">{t("Newest", "החדשים ביותר")}</option><option value="name">{t("Name", "שם")}</option>{enforceMoq && <option value="moq">{t("Lowest MOQ", "המינימום הנמוך ביותר")}</option>}
                 {res.showPrices && <><option value="price_asc">{t("Price: low to high", "מחיר: מהנמוך לגבוה")}</option><option value="price_desc">{t("Price: high to low", "מחיר: מהגבוה לנמוך")}</option></>}
                 <option value="storage_desc">{t("Most storage", "הכי הרבה אחסון")}</option><option value="ram_desc">{t("Most memory", "הכי הרבה זיכרון")}</option>
               </select>
@@ -197,7 +193,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
             </Empty>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {res.items.map((p) => <ProductCard key={p.id} p={p} l={l} currency={currency} rate={rate?.rate} compareSlot={actor ? <CompareToggle slug={p.slug} /> : null} />)}
+              {res.items.map((p) => <ProductCard key={p.id} p={p} l={l} enforceMoq={enforceMoq} currency={currency} rate={rate?.rate} compareSlot={actor ? <CompareToggle slug={p.slug} /> : null} />)}
             </div>
           )}
           {res.pages > 1 && (

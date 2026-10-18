@@ -13,6 +13,8 @@ import { AVAILABILITY_LABEL, CONDITION_LABEL } from "@/lib/catalog-meta";
 import { convertMinor } from "@/lib/money";
 import { can } from "@/lib/auth";
 import { getT } from "@/server/locale";
+import { getSettings } from "@/lib/settings";
+import { minOrderQty } from "@/lib/pricing";
 import { AVAILABILITY_HE, CONDITION_HE, categoryText } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +37,11 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const avLabel = l === "he" ? AVAILABILITY_HE[p.availability] : av.label;
   const cat = categoryText(category, l);
   const units = (n: number | string) => t(`${n} units`, `${n} יח׳`);
-  const canOrder = can(actor, "orders.place") && actor?.companyStatus === "APPROVED";
+  const canOrder = can(actor, "orders.place");
+  const enforceMoq = (await getSettings()).orderRules.enforceMoq;
+  const minQty = minOrderQty(p, enforceMoq);
+  // With an open store the first tier (at the product MOQ) is the list price, so it applies from 1 unit.
+  const tierRows = tiers.map((tier, i) => ({ ...tier, from: !enforceMoq && i === 0 ? 1 : tier.minQty }));
   const saved = actor ? (await db.select().from(savedProducts).where(and(eq(savedProducts.userId, actor.userId), eq(savedProducts.productId, p.id))).limit(1)).length > 0 : false;
   const groups = [...new Set(p.specs.map((s) => s.group))];
   const conv = (c: number) => (rate ? convertMinor(BigInt(c), rate.rate) : null);
@@ -69,11 +75,11 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
             {d.showPrices && rate ? (
               <>
                 <BuyBox variants={variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label }))} tiers={tiers} wholesaleCents={p.wholesaleCents!} contractCents={d.contractCents}
-                  moq={p.moq} increment={p.orderIncrement} currency={currency} rate={rate.rate} orderable={d.orderable} canOrder={canOrder} saved={saved} slug={p.slug} />
+                  moq={minQty} increment={enforceMoq ? p.orderIncrement : 1} currency={currency} rate={rate.rate} orderable={d.orderable} canOrder={canOrder} signedIn={!!actor} saved={saved} slug={p.slug} />
                 <table className="tbl num mt-5">
                   <thead><tr><th scope="col">{t("Quantity", "כמות")}</th><th scope="col" className="text-end">{t(`Unit price (${currency})`, `מחיר ליחידה (${currency})`)}</th></tr></thead>
                   <tbody>
-                    {tiers.map((tier) => <tr key={tier.minQty}><td>{t(`${tier.minQty}+ units`, `${tier.minQty}+ יח׳`)}</td><td className="text-end font-semibold text-deep-900"><Money cents={conv(tier.unitCents)} currency={currency} /></td></tr>)}
+                    {tierRows.map((tier) => <tr key={tier.minQty}><td>{t(`${tier.from}+ units`, `${tier.from}+ יח׳`)}</td><td className="text-end font-semibold text-deep-900"><Money cents={conv(tier.unitCents)} currency={currency} /></td></tr>)}
                     {d.contractCents !== null && <tr><td>{t("Your contract price", "מחיר החוזה שלכם")}</td><td className="text-end font-semibold text-ok"><Money cents={conv(d.contractCents)} currency={currency} /></td></tr>}
                   </tbody>
                 </table>
@@ -84,13 +90,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
                 </p>
               </>
             ) : (
-              <div className="space-y-3">
-                <p className="font-semibold text-deep-900">{t("Wholesale pricing is available to approved trade accounts.", "מחירי סיטונאות זמינים לחשבונות עסקיים מאושרים.")}</p>
-                <p className="text-sm text-steel-500">{t("Minimum order quantity for this listing:", "כמות הזמנה מינימלית למוצר זה:")} <span className="num font-semibold text-steel">{units(p.moq)}</span>.</p>
-                {!actor ? (
-                  <div className="flex flex-wrap gap-2"><Link href="/register" className="btn-primary">{t("Register your business", "רישום העסק")}</Link><Link href={`/login?next=/products/${p.slug}`} className="btn-outline">{t("Sign in", "כניסה")}</Link></div>
-                ) : <p className="text-sm text-steel-500">{t("Your account is under review. We will email you as soon as pricing is unlocked.", "החשבון שלכם בבדיקה. נשלח לכם מייל ברגע שהמחירים ייפתחו.")}</p>}
-              </div>
+              <p className="text-sm text-steel-500">{t("Prices in this currency are temporarily unavailable. Please choose another currency or contact us.", "המחירים במטבע זה אינם זמינים כרגע. בחרו מטבע אחר או פנו אלינו.")}</p>
             )}
           </div>
         </div>
@@ -121,8 +121,9 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           <section className="panel panel-pad">
             <h2 className="mb-3 font-semibold text-deep-900">{t("Ordering & logistics", "הזמנה ולוגיסטיקה")}</h2>
             <DL rows={[
-              [t("Minimum order", "הזמנה מינימלית"), <span key="m" className="num">{units(p.moq)}</span>],
-              [t("Order increment", "כפולות הזמנה"), p.orderIncrement > 1 ? units(p.orderIncrement) : t("Single units", "יחידות בודדות")],
+              [t("Minimum order", "הזמנה מינימלית"), <span key="m" className="num">{units(minQty)}</span>],
+              ...(!enforceMoq && p.moq > 1 ? [[t("Volume pricing from", "מחירי כמות החל מ-"), <span key="v" className="num">{units(p.moq)}</span>] as [string, React.ReactNode]] : []),
+              [t("Order increment", "כפולות הזמנה"), enforceMoq && p.orderIncrement > 1 ? units(p.orderIncrement) : t("Any quantity", "כל כמות")],
               [t("Case / carton / pallet", "אריזה / קרטון / משטח"), p.casePack || p.cartonQty || p.palletQty ? `${p.casePack ?? "—"} / ${p.cartonQty ?? "—"} / ${p.palletQty ?? "—"}` : t("Confirmed with offer", "יאושר בהצעה")],
               [t("Availability", "זמינות"), p.availabilityVerified && p.availableQty !== null ? t(`${p.availableQty} units confirmed`, `${p.availableQty} יח׳ מאושרות`) : t("Indicative — confirmed at order review", "משוערת — מאושרת בבדיקת ההזמנה")],
               [t("Lead time", "זמן אספקה"), p.leadTime ? <span key="lt" dir="auto">{p.leadTime}</span> : t("Confirmed at order review", "יאושר בבדיקת ההזמנה")],

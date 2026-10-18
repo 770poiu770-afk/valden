@@ -11,7 +11,7 @@ export type CardProduct = {
   availability: string; imageKey: string; imageUrl?: string | null; wholesaleCents: number | null; isSample?: boolean;
 };
 
-export function ProductCard({ p, currency = "USD", rate, compareSlot, l = "en" }: { p: CardProduct; currency?: Currency; rate?: string | null; compareSlot?: React.ReactNode; l?: Locale }) {
+export function ProductCard({ p, currency = "USD", rate, compareSlot, l = "en", enforceMoq = false }: { p: CardProduct; currency?: Currency; rate?: string | null; compareSlot?: React.ReactNode; l?: Locale; enforceMoq?: boolean }) {
   const t = makeT(l);
   const av = AVAILABILITY_LABEL[p.availability];
   const avLabel = (l === "he" ? AVAILABILITY_HE[p.availability] : av?.label) ?? p.availability;
@@ -35,13 +35,15 @@ export function ProductCard({ p, currency = "USD", rate, compareSlot, l = "en" }
           <div className="flex items-end justify-between gap-2">
             {price !== null ? (
               <div>
-                <p className="text-[11px] text-steel-500">{t("Wholesale from", "מחיר סיטונאי החל מ-")}</p>
+                <p className="text-[11px] text-steel-500">{t("Price per unit", "מחיר ליחידה")}</p>
                 <Money cents={price} currency={currency} className="text-lg font-bold text-deep-900" />
               </div>
             ) : (
-              <p className="text-sm font-medium text-steel-500">{t("Price on approval", "המחיר יוצג לאחר אישור")}</p>
+              <p className="text-sm font-medium text-steel-500">{t("Price not available", "המחיר אינו זמין")}</p>
             )}
-            <p className="num text-end text-xs text-steel-500">{t("MOQ", "מינימום")} <span className="font-semibold text-steel">{p.moq}</span></p>
+            {enforceMoq
+              ? <p className="num text-end text-xs text-steel-500">{t("MOQ", "מינימום")} <span className="font-semibold text-steel">{p.moq}</span></p>
+              : p.moq > 1 ? <p className="num text-end text-xs text-steel-500">{t("Bulk price from", "מחיר כמות מ-")} <span className="font-semibold text-steel">{p.moq}</span></p> : null}
           </div>
           <div className="flex items-center justify-between gap-2">
             <Badge tone={av?.tone === "ok" ? "ok" : av?.tone === "warn" ? "warn" : av?.tone === "info" ? "info" : "muted"}>{avLabel}</Badge>

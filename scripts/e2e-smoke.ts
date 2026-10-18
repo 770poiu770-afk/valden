@@ -43,7 +43,6 @@ function inputValue(html: string, name: string): string | undefined {
   return tag?.match(/value="([^"]*)"/)?.[1];
 }
 
-const PDF = Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
 
 async function main() {
   if (!ADMIN.password) throw new Error("Set E2E_ADMIN_PASSWORD");
@@ -59,34 +58,23 @@ async function main() {
     const r = await new Client().req(p);
     check(`GET ${p} → 200`, r.status === 200, String(r.status));
   }
-  const guestPdp = await (await new Client().req("/products/apple-iphone-17-pro-max-1tb")).text();
-  check("guest product page hides wholesale price", !/\$1,949\.00/.test(guestPdp) && /approved trade accounts/.test(guestPdp));
+  const guestPdp = await (await new Client().req("/products/apple-iphone-17-pro-max-1tb?currency=USD")).text();
+  check("guest product page shows public price", /\$1,949\.00/.test(guestPdp) && /Create an account to order/.test(guestPdp));
   const g404 = await new Client().req("/products/does-not-exist");
   check("unknown product → 404", g404.status === 404, String(g404.status));
 
-  // ---- registration (multipart, with document)
+  // ---- open sign-up: email + password only (plus optional company name so admin can find the account)
   const buyer = new Client();
-  const fd = new FormData();
-  const fields: Record<string, string> = {
-    legalName: `E2E Distribution ${tag} Ltd`, countryCode: "IL", registrationNumber: `51-${tag}`, businessType: "Distributor",
-    businessEmail: `office-${tag}@e2e.example`, businessPhone: "+972 3 000 0000", contactName: "Eve Tester", jobTitle: "Buyer",
-    email: `eve-${tag}@e2e.example`, password: "E2eStrongPassword1", "billing.contactName": "Eve Tester", "billing.line1": "1 Test Way",
-    "billing.city": "Tel Aviv", "billing.countryCode": "IL", sameAsBilling: "on", acceptTerms: "on", declareAuthorized: "on", docTypes: "VAT / tax registration certificate",
-  };
-  for (const [k, v] of Object.entries(fields)) fd.append(k, v);
-  fd.append("documents", new Blob([PDF], { type: "application/pdf" }), "vat.pdf");
-  const reg = await buyer.json("/api/auth/register", { method: "POST", body: fd });
-  check("register business (multipart + PDF)", reg.status === 200 && reg.data.redirect === "/portal?registered=1", JSON.stringify(reg.data));
-  const fakeFd = new FormData();
-  for (const [k, v] of Object.entries({ ...fields, email: `x-${tag}@e2e.example` })) fakeFd.append(k, v);
-  fakeFd.append("documents", new Blob([Buffer.from("not a pdf")], { type: "application/pdf" }), "fake.pdf");
-  const fake = await new Client().json("/api/auth/register", { method: "POST", body: fakeFd });
-  check("upload with mismatched magic bytes rejected", fake.status === 400, JSON.stringify(fake.data));
+  const reg = await buyer.json("/api/auth/register", { method: "POST", json: { email: `eve-${tag}@e2e.example`, password: "E2eStrongPassword1", companyName: `E2E Distribution ${tag} Ltd`, isBusiness: true, acceptTerms: true } });
+  check("register (email + password, no documents)", reg.status === 200 && reg.data.redirect === "/portal?welcome=1", JSON.stringify(reg.data));
+  const personal = new Client();
+  const preg = await personal.json("/api/auth/register", { method: "POST", json: { email: `pat-${tag}@e2e.example`, password: "E2eStrongPassword1", acceptTerms: true } });
+  check("register personal account (no company)", preg.status === 200, JSON.stringify(preg.data));
+  const noTerms = await new Client().json("/api/auth/register", { method: "POST", json: { email: `x-${tag}@e2e.example`, password: "E2eStrongPassword1" } });
+  check("sign-up without accepting terms rejected", noTerms.status === 400, JSON.stringify(noTerms.data));
 
-  const pend = await buyer.req("/portal");
-  check("pending buyer sees review page", (await pend.text()).includes("under review"));
-  const pendCart = await buyer.json("/api/cart", { method: "POST", json: { lines: [{ sku: "X", quantity: 1 }] } });
-  check("pending buyer cannot use cart (403)", pendCart.status === 403, String(pendCart.status));
+  const welcome = await buyer.req("/portal?welcome=1");
+  check("new customer lands on an active dashboard", welcome.status === 200 && !(await welcome.text()).includes("under review"));
   const pendAdmin = await buyer.req("/admin");
   check("buyer redirected away from /admin", pendAdmin.status === 307 || pendAdmin.status === 308, String(pendAdmin.status));
 
@@ -94,7 +82,7 @@ async function main() {
   const csrf = await fetch(`${BASE}/api/cart`, { method: "POST", headers: { Origin: "https://evil.example", Cookie: buyer.cookie, "Content-Type": "application/json" }, body: "{}" });
   check("cross-origin POST blocked (CSRF)", csrf.status === 403, String(csrf.status));
 
-  // ---- admin login and approval
+  // ---- admin login
   const admin = new Client();
   const bad = await admin.json("/api/auth/login", { method: "POST", json: { email: ADMIN.email, password: "wrong-password" } });
   check("admin wrong password → 401", bad.status === 401);
@@ -105,26 +93,21 @@ async function main() {
     check(`admin GET ${p} → 200`, r.status === 200, String(r.status));
   }
   const coList = await (await admin.req(`/admin/companies?q=${encodeURIComponent(`E2E Distribution ${tag}`)}`)).text();
-  const coId = coList.match(/\/admin\/companies\/([0-9a-f-]{36})/)?.[1];
-  check("admin finds new company", !!coId);
-  const coPage = await (await admin.req(`/admin/companies/${coId}`)).text();
-  const docId = coPage.match(/\/api\/documents\/([0-9a-f-]{36})/)?.[1];
-  const doc = await admin.req(`/api/documents/${docId}`);
-  check("admin downloads verification document as attachment", doc.status === 200 && (doc.headers.get("content-disposition") ?? "").startsWith("attachment"), String(doc.status));
-  const other = new Client();
-  const otherDoc = await other.req(`/api/documents/${docId}`);
-  check("anonymous cannot download document", otherDoc.status === 401, String(otherDoc.status));
-  const appr = await admin.json(`/api/admin/companies/${coId}/status`, { method: "POST", json: { to: "APPROVED", reason: "" } });
-  check("admin approves company", appr.status === 200, JSON.stringify(appr.data));
+  check("admin sees the new customer account", /\/admin\/companies\/[0-9a-f-]{36}/.test(coList));
 
-  // ---- approved buyer: prices, cart, checkout
-  const pdp = await (await buyer.req("/products/apple-iphone-17-pro-max-1tb?currency=USD")).text();
-  check("approved buyer sees wholesale price", /\$1,949\.00/.test(pdp));
-  const sku = (await buyer.json("/api/skus?q=iphone%2017%20pro%20max%201tb")).data as { results: { sku: string; variantId: string }[] };
+  // ---- personal customer: single unit with an address entered at checkout
+  const sku = (await personal.json("/api/skus?q=iphone%2017%20pro%20max%201tb")).data as { results: { sku: string; variantId: string }[] };
   check("SKU search returns results", sku.results?.length > 0);
   const v = sku.results[0];
+  const one = await personal.json("/api/cart", { method: "POST", json: { mode: "set", lines: [{ variantId: v.variantId, quantity: 1 }] } });
+  check("add 1 unit to cart", one.status === 200, JSON.stringify(one.data));
+  const oneOrder = await personal.json("/api/orders", { method: "POST", json: { currency: "ILS", shippingMethod: "VALDEN_FREIGHT", paymentMethod: "MANUAL_TRANSFER", billingSameAsShipping: true,
+    newShipping: { label: "Home", contactName: "Pat Shopper", line1: "2 Test St", city: "Haifa", countryCode: "IL" } } });
+  check("personal customer orders a single unit", oneOrder.status === 200, JSON.stringify(oneOrder.data));
+
+  // ---- business customer: bulk order with volume pricing
   const add = await buyer.json("/api/cart", { method: "POST", json: { mode: "set", lines: [{ variantId: v.variantId, quantity: 45 }] } });
-  check("add to cart", add.status === 200, JSON.stringify(add.data));
+  check("add 45 units to cart", add.status === 200, JSON.stringify(add.data));
   const cart = await buyer.json("/api/cart?currency=ILS");
   const sub = BigInt(String(cart.data.subtotalCents));
   check("cart subtotal ₪ computed server-side (45 × ₪7,016.40)", sub === 31573800n, String(cart.data.subtotalCents));
@@ -132,30 +115,21 @@ async function main() {
     const r = await buyer.req(p);
     check(`buyer GET ${p} → 200`, r.status === 200, String(r.status));
   }
-  const checkoutHtml = await (await buyer.req("/portal/checkout?currency=ILS")).text();
-  const shipId = inputValue(checkoutHtml, "shippingAddressId");
-  const billId = inputValue(checkoutHtml, "billingAddressId");
-  const tamper = await buyer.json("/api/orders", { method: "POST", json: { currency: "ILS", shippingAddressId: shipId, billingAddressId: billId, shippingMethod: "VALDEN_FREIGHT", paymentMethod: "MANUAL_TRANSFER", subtotalCents: "1", unitCents: "1" } });
+  const tamper = await buyer.json("/api/orders", { method: "POST", json: { currency: "ILS", shippingMethod: "VALDEN_FREIGHT", paymentMethod: "MANUAL_TRANSFER", subtotalCents: "1", unitCents: "1", billingSameAsShipping: true,
+    newShipping: { label: "Warehouse", contactName: "Eve Tester", line1: "1 Test Way", city: "Tel Aviv", countryCode: "IL" } } });
   const order = tamper; // client-supplied totals are ignored; the server prices the order itself
-  check("place order (client price fields ignored)", order.status === 200, JSON.stringify(order.data));
+  check("place bulk order (client price fields ignored)", order.status === 200, JSON.stringify(order.data));
   const orderId = String(order.data.orderId);
   const orderHtml = await (await buyer.req(`/portal/orders/${orderId}`)).text();
   check("order is pending review with server totals", orderHtml.includes("Under review") || orderHtml.includes("Order received"));
   check("order shows ₪315,738.00 subtotal", orderHtml.includes("₪315,738.00"));
 
-  // ---- isolation: a second approved buyer cannot see the order
-  const intruder = new Client();
-  const fd2 = new FormData();
-  for (const [k, val] of Object.entries({ ...fields, legalName: `Intruder ${tag}`, email: `intruder-${tag}@e2e.example`, registrationNumber: `52-${tag}` })) fd2.append(k, val);
-  fd2.append("documents", new Blob([PDF], { type: "application/pdf" }), "vat.pdf");
-  await intruder.json("/api/auth/register", { method: "POST", body: fd2 });
-  const iList = await (await admin.req(`/admin/companies?q=${encodeURIComponent(`Intruder ${tag}`)}`)).text();
-  const iId = iList.match(/\/admin\/companies\/([0-9a-f-]{36})/)?.[1];
-  await admin.json(`/api/admin/companies/${iId}/status`, { method: "POST", json: { to: "APPROVED", reason: "" } });
+  // ---- isolation: another customer cannot see the order
+  const intruder = personal;
   const peek = await intruder.req(`/portal/orders/${orderId}`);
-  check("other company cannot view order (404)", peek.status === 404, String(peek.status));
+  check("other customer cannot view order (404)", peek.status === 404, String(peek.status));
   const peekDoc = await intruder.req(`/documents/orders/${orderId}?type=proforma`);
-  check("other company cannot open order documents (404)", peekDoc.status === 404, String(peekDoc.status));
+  check("other customer cannot open order documents (404)", peekDoc.status === 404, String(peekDoc.status));
   const peekCancel = await intruder.json(`/api/orders/${orderId}/cancel`, { method: "POST", json: {} });
   check("other company cannot cancel order", peekCancel.status === 404, String(peekCancel.status));
   const buyerAdminApi = await buyer.json(`/api/admin/orders/${orderId}/confirm`, { method: "POST", json: {} });
@@ -187,7 +161,7 @@ async function main() {
   const lineId = inputValue(qa, "lines[0].id");
   const offer = await admin.json(`/api/admin/quotes/${quoteId}/offer`, { method: "POST", json: { lines: [{ id: lineId, offeredUnitPrice: "1850.00" }], validityDays: 5 } });
   check("admin issues offer", offer.status === 200, JSON.stringify(offer.data));
-  const acc = await buyer.json(`/api/quotes/${quoteId}/accept`, { method: "POST", json: { currency: "USD", shippingAddressId: shipId, billingAddressId: billId, shippingMethod: "BUYER_FORWARDER", paymentMethod: "MANUAL_TRANSFER" } });
+  const acc = await buyer.json(`/api/quotes/${quoteId}/accept`, { method: "POST", json: { currency: "USD", billingSameAsShipping: true, newShipping: { label: "Forwarder", contactName: "Eve Tester", line1: "3 Port Rd", city: "Ashdod", countryCode: "IL" }, shippingMethod: "BUYER_FORWARDER", paymentMethod: "MANUAL_TRANSFER" } });
   check("buyer accepts offer → order", acc.status === 200 && String(acc.data.redirect).startsWith("/portal/orders/"), JSON.stringify(acc.data));
 
   // ---- webhook endpoint rejects unsigned / forged calls

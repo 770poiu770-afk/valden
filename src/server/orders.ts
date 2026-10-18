@@ -13,6 +13,7 @@ import type { AppSettings } from "@/lib/settings";
 import { getCartItems, getOrCreateCart } from "./cart";
 import { blockingIssues, priceLines, type LineInput, type PricedCart } from "./pricing-engine";
 import { appUrl, queueEmail } from "./mail";
+import { saveCheckoutAddress } from "./accounts";
 
 export const CheckoutInput = z.object({
   currency: z.enum(["USD", "EUR", "ILS"]),
@@ -29,6 +30,28 @@ export const CheckoutInput = z.object({
   exportNotes: z.string().trim().max(1000).optional(),
 });
 export type CheckoutInput = z.infer<typeof CheckoutInput>;
+
+/**
+ * First-time customers enter their address at checkout ("newShipping.*", optional "newBilling.*").
+ * Save those to the account and return the body with address IDs, so the normal checkout validation applies.
+ */
+export async function withCheckoutAddresses(actor: Actor, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  assertBuyer(actor, "orders.place");
+  const out = { ...body };
+  const ns = body.newShipping as Record<string, unknown> | undefined;
+  if (!out.shippingAddressId && ns && typeof ns === "object") {
+    out.shippingAddressId = await saveCheckoutAddress(actor as Actor & { companyId: string }, "SHIPPING", ns);
+    const nb = body.newBilling as Record<string, unknown> | undefined;
+    const separate = body.billingSameAsShipping === false && nb && typeof nb === "object";
+    if (!out.billingAddressId) out.billingAddressId = await saveCheckoutAddress(actor as Actor & { companyId: string }, "BILLING", separate ? nb : ns);
+  } else if (out.shippingAddressId && !out.billingAddressId && typeof out.shippingAddressId === "string") {
+    // No billing address saved yet: bill to the chosen delivery address.
+    const ship = (await db.select().from(addresses).where(and(eq(addresses.id, out.shippingAddressId), eq(addresses.companyId, actor.companyId!))))[0];
+    if (ship) out.billingAddressId = await saveCheckoutAddress(actor as Actor & { companyId: string }, "BILLING", { contactName: ship.contactName, phone: ship.phone ?? undefined, line1: ship.line1, line2: ship.line2 ?? undefined, city: ship.city, region: ship.region ?? undefined, postalCode: ship.postalCode ?? undefined, countryCode: ship.countryCode });
+  }
+  delete out.newShipping; delete out.newBilling; delete out.billingSameAsShipping;
+  return out;
+}
 
 async function nextOrderNumber(tx: DbOrTx) {
   const r = await tx.execute(sql`SELECT nextval('order_number_seq') AS n`);

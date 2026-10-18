@@ -84,11 +84,16 @@ export function resolveUnitPrice(qty: number, wholesaleCents: number, tiers: Tie
 }
 
 export type QtyCheck = { ok: true } | { ok: false; message: string };
-export function validateQuantity(qty: number, p: { moq: number; orderIncrement: number; availableQty: number | null; availabilityVerified: boolean; name: string }): QtyCheck {
+/** Per-line quantity limit; larger volumes go through a quotation. */
+export const MAX_LINE_QTY = 100_000;
+/** Smallest quantity a customer may order. With an open store (enforceMoq=false) that is 1 unit. */
+export const minOrderQty = (p: { moq: number }, enforceMoq: boolean) => (enforceMoq ? p.moq : 1);
+
+export function validateQuantity(qty: number, p: { moq: number; orderIncrement: number; availableQty: number | null; availabilityVerified: boolean; name: string }, enforceMoq = true): QtyCheck {
   if (!Number.isInteger(qty) || qty <= 0) return { ok: false, message: `${p.name}: quantity must be a positive whole number.` };
-  if (qty > 100_000) return { ok: false, message: `${p.name}: quantity exceeds the per-line limit of 100,000 units. Please request a quote.` };
-  if (qty < p.moq) return { ok: false, message: `${p.name}: minimum order quantity is ${p.moq} units.` };
-  if (p.orderIncrement > 1 && qty % p.orderIncrement !== 0) return { ok: false, message: `${p.name}: order in multiples of ${p.orderIncrement} units (case pack).` };
+  if (qty > MAX_LINE_QTY) return { ok: false, message: `${p.name}: quantity exceeds the per-line limit of 100,000 units. Please request a quote.` };
+  if (enforceMoq && qty < p.moq) return { ok: false, message: `${p.name}: minimum order quantity is ${p.moq} units.` };
+  if (enforceMoq && p.orderIncrement > 1 && qty % p.orderIncrement !== 0) return { ok: false, message: `${p.name}: order in multiples of ${p.orderIncrement} units (case pack).` };
   if (p.availabilityVerified && p.availableQty !== null && qty > p.availableQty) return { ok: false, message: `${p.name}: only ${p.availableQty} units confirmed available.` };
   return { ok: true };
 }

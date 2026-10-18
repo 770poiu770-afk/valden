@@ -79,8 +79,8 @@ async function checkPage(page: Page, path: string, vp: string) {
 
 async function run() {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? undefined });
-  const publicPages = ["/", "/catalog", "/catalog?dept=audio", "/categories", "/products/apple-airpods-pro-3", "/register", "/login", "/contact", "/accessibility", "/quote", "/forgot-password"];
-  const buyerPages = ["/portal", "/catalog?dept=phones", "/portal/cart", "/portal/checkout", "/portal/orders", "/portal/bulk"];
+  const publicPages = ["/", "/catalog", "/catalog?dept=audio", "/categories", "/products/apple-airpods-pro-3", "/register", "/login", "/contact", "/accessibility", "/quote", "/forgot-password", "/faq", "/policies/returns", "/terms"];
+  const buyerPages = ["/portal", "/catalog?dept=phones", "/portal/cart", "/portal/checkout", "/portal/orders", "/portal/bulk", "/portal/company"];
   const adminPages = ["/admin", "/admin/orders", "/admin/products"];
   const groups: [string, string[], (c: BrowserContext) => Promise<void>][] = [
     ["guest", publicPages, async () => {}],

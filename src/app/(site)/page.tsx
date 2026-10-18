@@ -15,9 +15,9 @@ import type { T } from "@/lib/i18n";
 export const dynamic = "force-dynamic";
 
 const steps = (t: T) => [
-  [t("Register your business", "רישום העסק"), t("Submit company details, registration and tax numbers, and a verification document.", "שולחים פרטי חברה, מספר רישום ומספר עוסק, ומסמך לאימות.")],
-  [t("Verification by our trade desk", "אימות על ידי צוות המכירות"), t("We review every application. Approved accounts unlock wholesale pricing and ordering.", "אנחנו בודקים כל בקשה. בחשבונות שאושרו נפתחים מחירי סיטונאות והזמנות.")],
-  [t("Order online or request a quote", "הזמנה באתר או בקשת הצעת מחיר"), t("Build a cart against tier pricing, or send a list for a negotiated offer.", "בונים סל לפי מדרגות מחיר, או שולחים רשימה לקבלת הצעה מותאמת.")],
+  [t("Create an account", "יוצרים חשבון"), t("Just an email and a password. No company documents.", "רק אימייל וסיסמה. בלי מסמכי חברה.")],
+  [t("Choose products and quantities", "בוחרים מוצרים וכמויות"), t("One unit or thousands — volume prices apply automatically as quantities grow.", "יחידה אחת או אלפים — מחירי כמות מתעדכנים אוטומטית ככל שהכמות גדלה.")],
+  [t("Place your order", "מבצעים הזמנה"), t("Order online, or send a long list for a formal quotation.", "מזמינים באתר, או שולחים רשימה ארוכה לקבלת הצעת מחיר רשמית.")],
   [t("Confirmation and payment", "אישור ותשלום"), t("We confirm availability and freight, then you pay by PayPal or bank transfer.", "אנחנו מאשרים זמינות ומשלוח, ואז משלמים ב-PayPal או בהעברה בנקאית.")],
   [t("Dispatch and tracking", "משלוח ומעקב"), t("Shipments, references and tracking are posted to your account as they happen.", "משלוחים, אסמכתאות ומספרי מעקב מתעדכנים בחשבון שלכם בזמן אמת.")],
 ];
@@ -54,20 +54,20 @@ export default async function Home() {
       <section className="bg-deep text-white">
         <div className="container-page grid gap-10 py-14 lg:grid-cols-[1.15fr_1fr] lg:py-20">
           <div className="flex flex-col justify-center">
-            <h1 className="display text-[40px] text-white sm:text-[56px] lg:text-[64px]">{t("Electronics by the case and the pallet.", "אלקטרוניקה בקרטונים ובמשטחים.")}</h1>
+            <h1 className="display text-[40px] text-white sm:text-[56px] lg:text-[64px]">{t("Electronics, one unit or a pallet.", "אלקטרוניקה, מיחידה אחת ועד משטח.")}</h1>
             <p className="mt-6 max-w-[54ch] text-lg text-deep-100">
-              {t("Valden supplies flagship smartphones, workstations, graphics cards, displays and network equipment to wholesalers, resellers, retail chains and IT procurement teams. Trade accounts only.", "Valden מספקת סמארטפונים מובילים, תחנות עבודה, כרטיסי מסך, מסכים וציוד תקשורת לסיטונאים, משווקים, רשתות קמעונאות וצוותי רכש IT. לחשבונות עסקיים בלבד.")}
+              {t("Phones, computers, audio, gaming, smartwatches and chargers for everyone. Buy a single item, or order in bulk for your business with automatic volume pricing.", "טלפונים, מחשבים, אודיו, גיימינג, שעונים חכמים ומטענים לכולם. קנו פריט אחד, או הזמינו בכמויות לעסק עם מחירי כמות אוטומטיים.")}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {!actor ? (<>
-                <Link href="/register" className="btn-primary px-6 py-3 text-[15px]">{t("Register your business", "רישום העסק")}</Link>
-                <Link href="/login" className="btn border border-white/40 px-6 py-3 text-[15px] text-white hover:bg-white/10">{t("Sign in", "כניסה")}</Link>
+                <Link href="/catalog" className="btn-primary px-6 py-3 text-[15px]">{t("Browse the catalog", "לקטלוג המוצרים")}</Link>
+                <Link href="/register" className="btn border border-white/40 px-6 py-3 text-[15px] text-white hover:bg-white/10">{t("Create an account", "יצירת חשבון")}</Link>
               </>) : (
                 <Link href={actor.isStaff ? "/admin" : "/portal"} className="btn-primary px-6 py-3 text-[15px]">{t("Go to your account", "מעבר לחשבון")}</Link>
               )}
-              <Link href="/catalog" className="btn px-4 py-3 text-[15px] text-deep-100 underline underline-offset-4 hover:text-white">{t("Browse the catalog", "לקטלוג המוצרים")}</Link>
+              <Link href="/services" className="btn px-4 py-3 text-[15px] text-deep-100 underline underline-offset-4 hover:text-white">{t("Buying in bulk?", "קונים בכמויות?")}</Link>
             </div>
-            <p className="mt-8 text-sm text-deep-200">{t(`Online orders from ${minOrder}. Larger programmes, from ${target} upwards, are handled by quotation.`, `הזמנות באתר החל מ-${minOrder}. פרויקטים גדולים, מ-${target} ומעלה, מטופלים בהצעת מחיר.`)}</p>
+            <p className="mt-8 text-sm text-deep-200">{settings.minimumOrderValue.amountMinor > 0 ? t(`Online orders from ${minOrder}. `, `הזמנות באתר החל מ-${minOrder}. `) : t("No minimum order. ", "ללא מינימום הזמנה. ")}{t(`Orders from ${target} upwards can also be quoted.`, `להזמנות מ-${target} ומעלה אפשר לקבל גם הצעת מחיר.`)}</p>
           </div>
 
           {/* Live catalog manifest — figures come straight from the catalog database */}
@@ -77,7 +77,7 @@ export default async function Home() {
               <p className="num text-xs text-steel-500">{new Date().toISOString().slice(0, 10)}</p>
             </div>
             <table className="w-full text-sm">
-              <thead><tr className="text-start text-xs text-steel-500"><th scope="col" className="px-5 py-2 text-start font-medium">{t("Department", "מחלקה")}</th><th scope="col" className="px-2 py-2 text-end font-medium">{t("Listings", "מוצרים")}</th><th scope="col" className="px-5 py-2 text-end font-medium">{t("MOQ from", "מינימום החל מ-")}</th></tr></thead>
+              <thead><tr className="text-start text-xs text-steel-500"><th scope="col" className="px-5 py-2 text-start font-medium">{t("Department", "מחלקה")}</th><th scope="col" className="px-2 py-2 text-end font-medium">{t("Listings", "מוצרים")}</th><th scope="col" className="px-5 py-2 text-end font-medium">{t("Volume pricing from", "מחירי כמות החל מ-")}</th></tr></thead>
               <tbody>
                 {deptRows.map((r) => (
                   <tr key={r.slug} className="border-t border-line/70">
@@ -131,7 +131,7 @@ export default async function Home() {
                   <li key={p.slug} className="flex items-baseline justify-between gap-3 px-4 py-2.5 text-sm">
                     <Link href={`/products/${p.slug}`} className="hover:underline" dir="auto">{p.name}</Link>
                     <span className="num shrink-0 text-xs text-steel-500">
-                      {p.wholesaleCents !== null && rate ? formatMoney(convertMinor(BigInt(p.wholesaleCents), rate.rate), "USD") : t(`MOQ ${p.moq}`, `מינימום ${p.moq}`)}
+                      {p.wholesaleCents !== null && rate ? formatMoney(convertMinor(BigInt(p.wholesaleCents), rate.rate), "USD") : "—"}
                     </span>
                   </li>
                 ))}
@@ -148,7 +148,7 @@ export default async function Home() {
           <div>
             <h2 className="wide text-2xl">{t("Volume pricing, published per listing", "מחירי כמויות, מפורסמים לכל מוצר")}</h2>
             <p className="mt-3 max-w-[56ch] text-steel-500">
-              {t("Every listing carries a minimum order quantity and quantity breaks priced in steps of that minimum. Approved accounts see the exact unit price for each break, can hold negotiated contract prices, and can ask for a formal offer on any list.", "לכל מוצר יש כמות הזמנה מינימלית ומדרגות כמות לפי כפולות של המינימום. חשבונות מאושרים רואים את מחיר היחידה המדויק בכל מדרגה, יכולים לקבל מחירי חוזה מוסכמים ולבקש הצעה רשמית לכל רשימה.")}
+              {t("Buy from one unit. Every listing shows its quantity breaks and the exact unit price at each one, so the more you order, the less you pay per unit. Regular business customers can hold contract prices and ask for a formal offer on any list.", "קונים מיחידה אחת. בכל מוצר מוצגות מדרגות הכמות ומחיר היחידה המדויק בכל מדרגה — ככל שמזמינים יותר, משלמים פחות ליחידה. לקוחות עסקיים קבועים יכולים לקבל מחירי חוזה ולבקש הצעה רשמית לכל רשימה.")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/services" className="btn-outline">{t("How pricing works", "איך המחירים נקבעים")}</Link>
@@ -160,11 +160,11 @@ export default async function Home() {
               <thead><tr><th scope="col">{t("Order quantity", "כמות בהזמנה")}</th><th scope="col" className="text-end">{t("Discount from list", "הנחה ממחיר המחירון")}</th></tr></thead>
               <tbody>
                 {settings.pricingPolicy.tierSchedule.map((tier) => (
-                  <tr key={tier.moqMultiple}><td>{tier.moqMultiple === 1 ? t("Minimum order quantity", "כמות הזמנה מינימלית") : t(`${tier.moqMultiple}× minimum`, `פי ${tier.moqMultiple} מהמינימום`)}</td><td className="text-end font-semibold text-deep-900">{tier.discountBps === 0 ? t("List", "מחירון") : `−${(tier.discountBps / 100).toFixed(1)}%`}</td></tr>
+                  <tr key={tier.moqMultiple}><td>{tier.moqMultiple === 1 ? t("From the first volume break", "ממדרגת הכמות הראשונה") : t(`${tier.moqMultiple}× the first break`, `פי ${tier.moqMultiple} מהמדרגה הראשונה`)}</td><td className="text-end font-semibold text-deep-900">{tier.discountBps === 0 ? t("List", "מחירון") : `−${(tier.discountBps / 100).toFixed(1)}%`}</td></tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-3 text-xs text-steel-500">{t("Standard schedule; individual listings and contract prices may differ.", "מדרגות סטנדרטיות; מחירי מוצרים מסוימים ומחירי חוזה עשויים להיות שונים.")}</p>
+            <p className="mt-3 text-xs text-steel-500">{t("Below the first break you pay the list price. Standard schedule; individual listings and contract prices may differ.", "מתחת למדרגה הראשונה משלמים מחיר מחירון. מדרגות סטנדרטיות; מחירי מוצרים מסוימים ומחירי חוזה עשויים להיות שונים.")}</p>
           </div>
         </div>
       </section>
@@ -190,7 +190,7 @@ export default async function Home() {
             <h2 className="wide text-2xl text-white">{t("Buying for a programme or a container load?", "קונים לפרויקט או למכולה שלמה?")}</h2>
             <p className="mt-2 max-w-[60ch] text-deep-100">{t("Send your SKU list with quantities and target prices. Our trade desk replies with a formal, time-limited offer you can accept online.", "שלחו רשימת מק\"טים עם כמויות ומחירי יעד. צוות המכירות ישיב בהצעה רשמית לזמן מוגבל, שאפשר לאשר באתר.")}</p>
           </div>
-          <Link href="/quote" className="btn-primary shrink-0 px-6 py-3">{t("Request a wholesale quote", "בקשת הצעת מחיר סיטונאית")}</Link>
+          <Link href="/quote" className="btn-primary shrink-0 px-6 py-3">{t("Request a bulk quote", "בקשת הצעת מחיר לכמויות")}</Link>
         </div>
       </section>
     </>

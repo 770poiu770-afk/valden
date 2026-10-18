@@ -9,10 +9,10 @@ import { LocaleProvider } from "@/components/client/LocaleProvider";
 export async function generateMetadata(): Promise<Metadata> {
   const t = makeT(await getLocale());
   return {
-    title: { default: t("Valden — Wholesale electronics for business buyers", "Valden — סיטונאות אלקטרוניקה ללקוחות עסקיים"), template: "%s · Valden" },
+    title: { default: t("Valden — Electronics, from one unit to bulk", "Valden — אלקטרוניקה, מיחידה אחת ועד כמויות גדולות"), template: "%s · Valden" },
     description: t(
-      "B2B wholesale distribution of smartphones, workstations, graphics cards, displays and enterprise equipment. Verified business accounts only.",
-      "הפצה סיטונאית לעסקים של סמארטפונים, תחנות עבודה, כרטיסי מסך, מסכים וציוד ארגוני. לחשבונות עסקיים מאומתים בלבד.",
+      "Smartphones, computers, audio, gaming, smartwatches and chargers — buy a single unit or in bulk with automatic volume pricing.",
+      "סמארטפונים, מחשבים, אודיו, גיימינג, שעונים חכמים ומטענים — קנייה של יחידה אחת או בכמויות, עם מחירי כמות אוטומטיים.",
     ),
     icons: { icon: "/favicon.svg" },
   };

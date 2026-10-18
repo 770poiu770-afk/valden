@@ -201,7 +201,7 @@ function coerceSetting(key: keyof AppSettings, b: Record<string, unknown>): unkn
       for (const part of String(b.byCountry ?? "").split(",").map((x) => x.trim()).filter(Boolean)) { const [c, r] = part.split(":"); byCountry[c.trim().toUpperCase()] = Math.round(Number(r) * 100); }
       return { byCountry, defaultRateBps: n("defaultRate"), note: String(b.note ?? "") };
     }
-    case "orderRules": return { requireOrderConfirmation: bool("requireOrderConfirmation"), riskReviewThresholdBaseMinor: n("riskThreshold"), newCompanyReviewDays: Number(b.newCompanyReviewDays), reviewFirstOrder: bool("reviewFirstOrder") };
+    case "orderRules": return { requireOrderConfirmation: bool("requireOrderConfirmation"), riskReviewThresholdBaseMinor: n("riskThreshold"), newCompanyReviewDays: Number(b.newCompanyReviewDays), reviewFirstOrder: bool("reviewFirstOrder"), enforceMoq: bool("enforceMoq") };
     case "payments": return { paypalEnabled: bool("paypalEnabled"), paypalMaxOrderBaseMinor: n("paypalMax"), manualTransferEnabled: bool("manualTransferEnabled"), manualTransferInstructions: String(b.manualTransferInstructions ?? "") };
     case "quoteDefaults": return { offerValidityDays: Number(b.offerValidityDays) };
     case "shippingMethods": return JSON.parse(String(b.json ?? "[]"));

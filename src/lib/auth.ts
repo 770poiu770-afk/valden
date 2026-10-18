@@ -47,6 +47,11 @@ export async function destroyUserSessions(userId: string, tx: DbOrTx = db) {
   await tx.delete(sessions).where(eq(sessions.userId, userId));
 }
 
+/** A customer account may shop unless staff suspended or rejected it (legacy "pending" accounts are treated as active). */
+export function accountActive(status: string | null | undefined) {
+  return !!status && status !== "SUSPENDED" && status !== "REJECTED";
+}
+
 export async function loadActorByUserId(userId: string, tx: DbOrTx = db): Promise<Actor | null> {
   const rows = await tx
     .select({ u: users, roleKey: roles.key, isStaff: roles.isStaff, roleId: roles.id, cName: companies.legalName, cStatus: companies.status })
@@ -63,8 +68,8 @@ export async function loadActorByUserId(userId: string, tx: DbOrTx = db): Promis
     .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
     .where(eq(rolePermissions.roleId, r.roleId));
   let set = new Set(perms.map((p) => p.key as Permission));
-  // Buyers only receive buyer permissions while their company is approved.
-  if (!r.isStaff && r.cStatus !== "APPROVED") {
+  // Open store: every customer account can buy unless staff suspended or rejected it.
+  if (!r.isStaff && !accountActive(r.cStatus)) {
     set = new Set([...set].filter((p) => p === "company.manage"));
   }
   return {
@@ -114,7 +119,7 @@ export function assertCan(actor: Actor | null | undefined, p: Permission): asser
 /** Approved buyer with a company — required for ordering/quotes. */
 export function assertBuyer(actor: Actor | null | undefined, p: Permission): asserts actor is Actor & { companyId: string } {
   assertCan(actor, p);
-  if (!actor.companyId || actor.companyStatus !== "APPROVED") throw forbidden("Your business account must be approved first.");
+  if (!actor.companyId || !accountActive(actor.companyStatus)) throw forbidden("This account is suspended. Contact customer service.");
 }
 
 export const PASSWORD_RULE = "At least 12 characters, including a letter and a number.";

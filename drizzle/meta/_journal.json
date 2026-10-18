@@ -15,6 +15,13 @@
       "when": 1792254604800,
       "tag": "0001_quote_freight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792311448566,
+      "tag": "0002_open_store",
+      "breakpoints": true
     }
   ]
 }

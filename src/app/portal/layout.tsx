@@ -5,12 +5,13 @@ import { CompareBar } from "@/components/client/CompareToggle";
 import { currentActor } from "@/server/http";
 import { LogoutButton } from "@/components/client/LogoutButton";
 import { getT } from "@/server/locale";
+import { accountActive } from "@/lib/auth";
 import type { T } from "@/lib/i18n";
 
 const navItems = (t: T) => [
-  ["/portal", t("Dashboard", "לוח בקרה")], ["/catalog", t("Wholesale catalog", "קטלוג סיטונאי")], ["/portal/bulk", t("Bulk order builder", "הזמנה מרשימה")], ["/portal/cart", t("Cart", "סל")],
+  ["/portal", t("Dashboard", "לוח בקרה")], ["/catalog", t("Catalog", "קטלוג")], ["/portal/bulk", t("Bulk order builder", "הזמנה מרשימה")], ["/portal/cart", t("Cart", "סל")],
   ["/portal/quotes", t("Quotes & offers", "הצעות מחיר")], ["/portal/orders", t("Orders", "הזמנות")], ["/portal/saved", t("Saved products", "מוצרים שמורים")], ["/portal/compare", t("Compare", "השוואה")],
-  ["/portal/company", t("Company & addresses", "חברה וכתובות")],
+  ["/portal/company", t("Account & addresses", "חשבון וכתובות")],
 ];
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +20,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const { t } = await getT();
   const NAV = navItems(t);
   if (actor.isStaff) redirect("/admin");
-  const approved = actor.companyStatus === "APPROVED";
+  const approved = accountActive(actor.companyStatus);
   const nav = approved ? NAV : NAV.filter(([h]) => h === "/portal" || h === "/portal/company" || h === "/catalog");
   return (
     <>

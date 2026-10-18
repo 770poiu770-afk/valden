@@ -1,24 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { addresses, roles, users } from "@/db/schema";
+import { roles, users } from "@/db/schema";
 import { hashPassword, loadActorByUserId, type Actor } from "@/lib/auth";
-import { changeCompanyStatus, registerBusiness, type RegistrationInput } from "@/server/accounts";
-import type { StoredFile } from "@/server/uploads";
+import { registerCustomer, saveCheckoutAddress, type RegistrationInput } from "@/server/accounts";
 import { setPayPalGateway, type PayPalGateway, type PayPalOrder, type PayPalRefund } from "@/server/paypal";
 
-export const fakeDoc = (): StoredFile => ({ storageKey: `2026-10/${randomUUID()}.pdf`, originalName: "registration.pdf", mimeType: "application/pdf", sizeBytes: 1234, sha256: "0".repeat(64) });
-
+/** Open-store sign-up input: only email, password and terms are required. */
 export function regInput(over: Partial<RegistrationInput> = {}): RegistrationInput {
   const tag = randomUUID().slice(0, 8);
-  const addr = { contactName: "Test Contact", line1: "10 Harbour Road", city: "Tel Aviv", countryCode: "IL", phone: undefined, line2: undefined, region: undefined, postalCode: undefined };
-  return {
-    legalName: `Test Trading ${tag} Ltd`, tradingName: undefined, countryCode: "IL", registrationNumber: `51-${tag}`, taxId: undefined,
-    businessType: "Distributor", website: undefined, businessEmail: `office-${tag}@testco.example`, businessPhone: "+972 3 555 0000",
-    expectedMonthlyVolume: undefined, contactName: "Test Contact", jobTitle: "Purchasing Manager", contactPhone: undefined,
-    email: `buyer-${tag}@testco.example`, password: "CorrectHorse12battery", billing: addr, shipping: addr, docTypes: ["VAT / tax registration certificate"],
-    acceptTerms: true, declareAuthorized: true, ...over,
-  };
+  return { email: `shopper-${tag}@example.com`, password: "CorrectHorse12battery", acceptTerms: true, ...over };
 }
 
 let adminCache: Actor | null = null;
@@ -31,12 +22,14 @@ export async function staff(roleKey = "SUPER_ADMIN"): Promise<Actor> {
   return a;
 }
 
+/** A signed-up customer with a saved delivery and billing address (as after a first checkout). */
 export async function approvedBuyer(over: Partial<RegistrationInput> = {}) {
-  const r = await registerBusiness(regInput(over), [fakeDoc()]);
-  await changeCompanyStatus(await staff(), r.companyId, "APPROVED", "");
+  const r = await registerCustomer(regInput({ fullName: "Test Contact", ...over }));
   const actor = (await loadActorByUserId(r.userId))! as Actor & { companyId: string };
-  const addrs = await db.select().from(addresses).where(eq(addresses.companyId, r.companyId));
-  return { actor, ...r, shippingAddressId: addrs.find((a) => a.kind === "SHIPPING")!.id, billingAddressId: addrs.find((a) => a.kind === "BILLING")!.id };
+  const addr = { contactName: "Test Contact", line1: "10 Harbour Road", city: "Tel Aviv", countryCode: "IL" };
+  const shippingAddressId = await saveCheckoutAddress(actor, "SHIPPING", addr);
+  const billingAddressId = await saveCheckoutAddress(actor, "BILLING", addr);
+  return { actor, ...r, shippingAddressId, billingAddressId };
 }
 
 /** In-memory PayPal sandbox double. Records calls; behaviour is configurable per test. */

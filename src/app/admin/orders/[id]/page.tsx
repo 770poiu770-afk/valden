@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { companies, refunds } from "@/db/schema";
+import { companies, refunds, users } from "@/db/schema";
 import { requireStaff } from "@/server/guards";
 import { orderBundle } from "@/server/orders";
 import { ActionButton, ActionForm } from "@/components/ActionForm";
@@ -19,6 +19,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
   if (!b) notFound();
   const o = b.order;
   const co = (await db.select().from(companies).where(eq(companies.id, o.companyId)))[0];
+  const buyer = (await db.select({ email: users.email, fullName: users.fullName, phone: users.phone }).from(users).where(eq(users.id, o.placedById)))[0];
   const rfs = await db.select().from(refunds).where(eq(refunds.orderId, o.id)).orderBy(desc(refunds.createdAt));
   const can = (p: Parameters<typeof a.permissions.has>[0]) => a.permissions.has(p);
   const shippedQty = new Map<number, number>();
@@ -29,7 +30,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
   return (
     <div className="space-y-6">
       <PageHeader title={`Order ${o.number}`} back={{ href: "/admin/orders", label: "Orders" }}
-        intro={<span className="flex flex-wrap items-center gap-2"><Link className="link" href={`/admin/companies/${co.id}`}>{co.legalName}</Link> · {fmtDate(o.placedAt, true)} <StatusPill status={o.status} /> <StatusPill status={o.paymentStatus} /></span>}
+        intro={<span className="flex flex-wrap items-center gap-2"><Link className="link" href={`/admin/companies/${co.id}`}>{co.legalName}</Link>{co.accountType === "PERSONAL" && <span className="text-xs text-steel-500">(personal)</span>} · {buyer && <><a className="link" href={`mailto:${buyer.email}`}>{buyer.email}</a>{buyer.phone ? ` · ${buyer.phone}` : ""} · </>}{fmtDate(o.placedAt, true)} <StatusPill status={o.status} /> <StatusPill status={o.paymentStatus} /></span>}
         actions={<><Link className="btn-outline btn-sm" target="_blank" href={`/documents/orders/${o.id}?type=proforma`}>Pro-forma</Link><Link className="btn-outline btn-sm" target="_blank" href={`/documents/orders/${o.id}?type=packing`}>Packing list</Link></>} />
 
       {o.riskStatus === "PENDING_REVIEW" && <Notice tone="warn" title="Risk review required"><ul className="list-disc pl-5">{o.riskReasons.map((r) => <li key={r}>{r}</li>)}</ul>Verify the account, delivery destination and payment route before confirming.</Notice>}

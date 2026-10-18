@@ -5,7 +5,7 @@ import { companies } from "@/db/schema";
 import { requireStaff } from "@/server/guards";
 import { PageHeader, StatusPill, fmtDate, Empty } from "@/components/ui";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Business accounts" };
+export const metadata = { title: "Customer accounts" };
 const STATUSES = ["PENDING_REVIEW", "MORE_INFO_REQUIRED", "APPROVED", "SUSPENDED", "REJECTED"] as const;
 export default async function Companies({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
   await requireStaff("companies.review");
@@ -16,16 +16,16 @@ export default async function Companies({ searchParams }: { searchParams: Promis
   const rows = await db.select().from(companies).where(w.length ? and(...w) : undefined).orderBy(desc(companies.createdAt)).limit(300);
   return (
     <div>
-      <PageHeader title="Business accounts" intro="Review registrations, verify documents and manage account status." />
+      <PageHeader title="Customer accounts" intro="Every shopper and business customer. Accounts are active on sign-up; suspend an account here if needed." />
       <form className="mb-4 flex flex-wrap gap-2">
-        <input name="q" defaultValue={sp.q} placeholder="Name, registration no., email" className="input w-72" />
-        <select name="status" defaultValue={sp.status ?? ""} className="input w-56"><option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ").toLowerCase()}</option>)}</select>
+        <input name="q" defaultValue={sp.q} placeholder="Name, registration no., email" aria-label="Search accounts" className="input w-72" />
+        <select name="status" aria-label="Status" defaultValue={sp.status ?? ""} className="input w-56"><option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ").toLowerCase()}</option>)}</select>
         <button className="btn-deep">Filter</button>
       </form>
       {rows.length === 0 ? <Empty title="No accounts match" /> : (
         <div className="panel overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table"><table className="tbl min-w-[800px]">
-          <thead><tr><th>Company</th><th>Country</th><th>Type</th><th>Registration</th><th>Status</th><th>Registered</th></tr></thead>
-          <tbody>{rows.map((c) => <tr key={c.id}><td><Link className="link" href={`/admin/companies/${c.id}`}>{c.legalName}</Link><p className="text-xs text-steel-500">{c.businessEmail}</p></td><td>{c.countryCode}</td><td>{c.businessType}</td><td className="num">{c.registrationNumber}</td><td><StatusPill status={c.status} /></td><td>{fmtDate(c.createdAt)}</td></tr>)}</tbody>
+          <thead><tr><th>Customer</th><th>Country</th><th>Account</th><th>Registration</th><th>Status</th><th>Joined</th></tr></thead>
+          <tbody>{rows.map((c) => <tr key={c.id}><td><Link className="link" href={`/admin/companies/${c.id}`}>{c.legalName}</Link><p className="text-xs text-steel-500">{c.businessEmail}</p></td><td>{c.countryCode}</td><td>{c.accountType === "PERSONAL" ? "Personal" : `Business${c.businessType && c.businessType !== "Business" ? ` · ${c.businessType}` : ""}`}</td><td className="num">{c.registrationNumber ?? c.taxId ?? "—"}</td><td><StatusPill status={c.status} /></td><td>{fmtDate(c.createdAt)}</td></tr>)}</tbody>
         </table></div>
       )}
     </div>

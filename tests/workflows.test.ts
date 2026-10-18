@@ -1,20 +1,20 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { db, pool } from "@/db";
-import { orders, paymentEvents, payments, priceTiers, products, quotes, refunds, users, variants } from "@/db/schema";
+import { addresses, companies, orders, paymentEvents, payments, priceTiers, products, quotes, refunds, users, variants } from "@/db/schema";
 import { loadActorByUserId, can, checkCredentials } from "@/lib/auth";
 import { convertMinor, decimalStringToMinor, formatMoney, minorToDecimalString } from "@/lib/money";
 import { buildTiers, computeWholesale, resolveUnitPrice } from "@/lib/pricing";
 import { DEFAULT_SETTINGS, setSetting, getSettings } from "@/lib/settings";
-import { changeCompanyStatus, registerBusiness, requestPasswordReset, resetPassword } from "@/server/accounts";
+import { changeCompanyStatus, registerCustomer, requestPasswordReset, resetPassword, updateAccountProfile } from "@/server/accounts";
 import { getProductDetail, searchCatalog } from "@/server/catalog";
 import { upsertCartLines, viewCart } from "@/server/cart";
-import { cancelOrder, confirmOrder, createShipment, loadOrderFor, orderBundle, placeOrderFromCart, updateShipment } from "@/server/orders";
+import { cancelOrder, confirmOrder, createShipment, loadOrderFor, orderBundle, placeOrderFromCart, updateShipment, withCheckoutAddresses } from "@/server/orders";
 import { acceptOffer, issueOffer, quoteBundle, requestQuote } from "@/server/quotes";
 import { cancelPayPalPayment, capturePayPalPayment, handlePayPalWebhook, issueRefund, reconcilePayPalPayment, recordManualPayment, startPayPalPayment, switchPaymentMethod } from "@/server/payments";
 import { importPricesCsv, importProducts, parseCatalogCsv, exportPricesCsv } from "@/server/catalog-import";
 import { setPayPalGateway } from "@/server/paypal";
-import { approvedBuyer, fakeDoc, installFakePayPal, regInput, staff, type FakePayPal } from "./helpers";
+import { approvedBuyer, installFakePayPal, regInput, staff, type FakePayPal } from "./helpers";
 
 const WH = { authAlgo: "SHA256withRSA", certUrl: "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-1", transmissionId: "t1", transmissionSig: "sig", transmissionTime: new Date().toISOString() };
 
@@ -69,58 +69,60 @@ describe("money and pricing rules", () => {
 });
 
 /* ---------------------------------------------------------------- */
-describe("1–3. registration, approval and restricted pricing", () => {
-  it("registers a business as pending with no wholesale access", async () => {
-    const r = await registerBusiness(regInput(), [fakeDoc()]);
+describe("1–3. open sign-up, account status and public prices", () => {
+  it("lets anyone sign up with just an email and password and shop immediately", async () => {
+    const r = await registerCustomer(regInput());
     const a = (await loadActorByUserId(r.userId))!;
-    expect(a.companyStatus).toBe("PENDING_REVIEW");
-    expect(can(a, "catalog.view_prices")).toBe(false);
-    expect(can(a, "company.manage")).toBe(true);
-    await expect(upsertCartLines(a, [{ sku: "X", quantity: 1 }])).rejects.toThrow(/permission|approved/i);
-    const res = await searchCatalog({ q: "iphone" }, a);
-    expect(res.items.every((i) => i.wholesaleCents === null)).toBe(true);
+    expect(a.companyStatus).toBe("APPROVED");
+    expect(can(a, "orders.place")).toBe(true);
+    expect(can(a, "catalog.view_prices")).toBe(true);
+    const co = (await db.select().from(companies).where(eq(companies.id, r.companyId)))[0];
+    expect(co.accountType).toBe("PERSONAL");
+    expect(co.registrationNumber).toBeNull();
+    expect(co.legalName).toMatch(/Shopper/); // name derived from the email when none is given
+    const { v } = await variantOf("apple-iphone-17-pro-256gb");
+    await upsertCartLines(a, [{ variantId: v.id, quantity: 1 }], "set");
+    expect((await viewCart(a, "USD")).lines[0].issues).toEqual([]);
   });
-  it("requires a document, strong password and unique email", async () => {
-    await expect(registerBusiness(regInput(), [])).rejects.toThrow(/document/);
-    await expect(registerBusiness(regInput({ password: "short" }), [fakeDoc()])).rejects.toThrow(/12 characters/);
+  it("validates password strength, unique email and terms acceptance", async () => {
+    await expect(registerCustomer(regInput({ password: "short" }))).rejects.toThrow(/12 characters|at least 12/i);
+    await expect(registerCustomer(regInput({ acceptTerms: false as unknown as true }))).rejects.toThrow();
     const i = regInput();
-    await registerBusiness(i, [fakeDoc()]);
-    await expect(registerBusiness({ ...i, legalName: "Other" }, [fakeDoc()])).rejects.toThrow(/already exists/);
+    await registerCustomer(i);
+    await expect(registerCustomer({ ...i, email: i.email.toUpperCase() })).rejects.toThrow(/already exists/);
   });
-  it("approves, rejects and suspends with history and permission effects", async () => {
+  it("stores optional business details for companies buying in bulk", async () => {
+    const r = await registerCustomer(regInput({ fullName: "Dana Levi", isBusiness: true, companyName: "Levi Retail Ltd", taxId: "514000000", countryCode: "IL" }));
+    const co = (await db.select().from(companies).where(eq(companies.id, r.companyId)))[0];
+    expect(co.accountType).toBe("BUSINESS");
+    expect(co.legalName).toBe("Levi Retail Ltd");
+    expect(co.taxId).toBe("514000000");
+    const a = (await loadActorByUserId(r.userId))!;
+    await updateAccountProfile(a, { fullName: "Dana Levi", countryCode: "IL" }); // company name removed → personal account
+    expect((await db.select().from(companies).where(eq(companies.id, r.companyId)))[0].accountType).toBe("PERSONAL");
+  });
+  it("still lets staff suspend an account; legacy pending accounts can shop", async () => {
     const admin = await staff();
-    const r1 = await registerBusiness(regInput(), [fakeDoc()]);
-    await changeCompanyStatus(admin, r1.companyId, "APPROVED", "");
-    const a1 = (await loadActorByUserId(r1.userId))!;
-    expect(can(a1, "catalog.view_prices")).toBe(true);
-    expect(can(a1, "orders.place")).toBe(true);
-    await changeCompanyStatus(admin, r1.companyId, "SUSPENDED", "Overdue compliance review");
-    expect(can((await loadActorByUserId(r1.userId))!, "orders.place")).toBe(false);
-    const r2 = await registerBusiness(regInput(), [fakeDoc()]);
-    await changeCompanyStatus(admin, r2.companyId, "REJECTED", "Could not verify registration");
-    expect((await loadActorByUserId(r2.userId))!.companyStatus).toBe("REJECTED");
-    await expect(changeCompanyStatus(admin, r2.companyId, "SUSPENDED", "invalid transition")).rejects.toThrow(/Cannot change/);
+    const r = await registerCustomer(regInput());
+    await changeCompanyStatus(admin, r.companyId, "SUSPENDED", "Chargeback investigation");
+    const a = (await loadActorByUserId(r.userId))!;
+    expect(can(a, "orders.place")).toBe(false);
+    await expect(upsertCartLines(a, [{ sku: "X", quantity: 1 }])).rejects.toThrow(/suspended|permission/i);
+    await db.update(companies).set({ status: "PENDING_REVIEW" }).where(eq(companies.id, r.companyId));
+    expect(can((await loadActorByUserId(r.userId))!, "orders.place")).toBe(true);
   });
-  it("hides prices and staff fields from guests; shows them to approved buyers", async () => {
+  it("shows prices to everyone but keeps staff-only fields hidden", async () => {
     const guest = await getProductDetail("apple-iphone-17-pro-max-1tb", null);
-    expect(guest!.product.wholesaleCents).toBeNull();
-    expect(guest!.tiers).toHaveLength(0);
+    expect(guest!.product.wholesaleCents).toBe(194900);
+    expect(guest!.tiers.length).toBeGreaterThan(1);
     expect(guest!.product.supplierSku).toBeNull();
     expect(guest!.product.referencePriceCents).toBeNull();
-    const b = await approvedBuyer();
-    const d = await getProductDetail("apple-iphone-17-pro-max-1tb", b.actor);
-    expect(d!.product.wholesaleCents).toBe(194900);
-    expect(d!.tiers.length).toBeGreaterThan(1);
-    expect(d!.product.referencePriceCents).toBeNull(); // reference price stays staff-only
-  });
-  it("ignores price filters for users without price access (no price probing)", async () => {
-    const all = await searchCatalog({ category: "iphone" }, null);
-    const filtered = await searchCatalog({ category: "iphone", maxPrice: "1", currency: "USD" }, null);
-    expect(filtered.total).toBe(all.total);
+    const res = await searchCatalog({ q: "iphone" }, null);
+    expect(res.items.every((i) => i.wholesaleCents !== null)).toBe(true);
   });
   it("locks login after repeated failures and supports one-time password reset", async () => {
     const i = regInput();
-    const r = await registerBusiness(i, [fakeDoc()]);
+    const r = await registerCustomer(i);
     expect((await checkCredentials(i.email, "wrong-password-1")).ok).toBe(false);
     expect((await checkCredentials(i.email, i.password)).ok).toBe(true);
     const token = await requestPasswordReset(i.email);
@@ -155,16 +157,55 @@ describe("4. search and filtering", () => {
 
 /* ---------------------------------------------------------------- */
 describe("5–8. quantities, tiers, cart persistence and a ₪300,000 order", () => {
-  it("validates MOQ and case-pack increments", async () => {
+  it("sells a single unit to a new customer who enters the address at checkout", async () => {
+    const r = await registerCustomer(regInput({ fullName: "Avi Cohen" }));
+    const a = (await loadActorByUserId(r.userId))! as Awaited<ReturnType<typeof approvedBuyer>>["actor"];
+    const { p, v } = await variantOf("apple-iphone-17-pro-256gb");
+    expect(p.moq).toBe(20); // product data unchanged: the MOQ now marks where volume pricing starts
+    await upsertCartLines(a, [{ variantId: v.id, quantity: 1 }], "set");
+    const cart = await viewCart(a, "ILS");
+    expect(cart.lines[0].issues).toEqual([]);
+    expect(cart.minimum).toBeNull(); // no minimum order value by default
+    expect(cart.lines[0].unitBaseCents).toBe(p.wholesaleCents);
+    const body = await withCheckoutAddresses(a, { currency: "ILS", shippingMethod: "VALDEN_FREIGHT", paymentMethod: "PAYPAL", newShipping: { contactName: "Avi Cohen", line1: "5 Herzl St", city: "Haifa", countryCode: "IL", phone: "050-0000000" }, billingSameAsShipping: true });
+    const order = await placeOrderFromCart(a, body as never);
+    const items = (await orderBundle(a, order.id)).items;
+    expect(items).toHaveLength(1);
+    expect(items[0].quantity).toBe(1);
+    expect(order.subtotalCents).toBe(items[0].lineCents);
+    expect(order.shippingAddress.contactName).toBe("Avi Cohen");
+    const saved = await db.select().from(addresses).where(eq(addresses.companyId, r.companyId));
+    expect(saved.map((x) => x.kind).sort()).toEqual(["BILLING", "SHIPPING"]);
+  });
+  it("lets an individual buy large quantities with volume pricing and sensible limits", async () => {
     const b = await approvedBuyer();
-    const { v } = await variantOf("apple-iphone-17-pro-256gb");
-    await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 7 }], "set");
+    const { p, v } = await variantOf("apple-iphone-17-pro-256gb");
+    await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 523 }], "set"); // not a case-pack multiple: allowed
     let cart = await viewCart(b.actor, "USD");
-    expect(cart.lines[0].issues.join()).toMatch(/minimum order quantity is 20/);
-    await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 22 }], "set");
+    expect(cart.lines[0].issues).toEqual([]);
+    const tiers = await db.select().from(priceTiers).where(eq(priceTiers.productId, p.id));
+    const best = tiers.filter((t) => t.minQty <= 523).sort((x, y) => y.minQty - x.minQty)[0];
+    expect(cart.lines[0].unitBaseCents).toBe(best.unitCents);
+    expect(best.unitCents).toBeLessThan(p.wholesaleCents);
+    expect(cart.lines[0].lineBaseCents).toBe(BigInt(best.unitCents) * 523n);
+    await expect(upsertCartLines(b.actor, [{ variantId: v.id, quantity: 100_001 }], "set")).rejects.toThrow(/Invalid quantity/); // per-line cap
     cart = await viewCart(b.actor, "USD");
-    expect(cart.lines[0].issues.join()).toMatch(/multiples of 5/);
-    await expect(placeOrderFromCart(b.actor, checkout(b) as never)).rejects.toThrow(/cannot be placed/);
+    expect(cart.lines[0].quantity).toBe(523);
+  });
+  it("can re-enable MOQ and case-pack rules from settings", async () => {
+    const s = await getSettings();
+    await setSetting("orderRules", { ...s.orderRules, enforceMoq: true }, null);
+    try {
+      const b = await approvedBuyer();
+      const { v } = await variantOf("apple-iphone-17-pro-256gb");
+      await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 7 }], "set");
+      let cart = await viewCart(b.actor, "USD");
+      expect(cart.lines[0].issues.join()).toMatch(/minimum order quantity is 20/);
+      await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 22 }], "set");
+      cart = await viewCart(b.actor, "USD");
+      expect(cart.lines[0].issues.join()).toMatch(/multiples of 5/);
+      await expect(placeOrderFromCart(b.actor, checkout(b) as never)).rejects.toThrow(/cannot be placed/);
+    } finally { await setSetting("orderRules", { ...s.orderRules, enforceMoq: false }, null); }
   });
   it("applies quantity tiers server-side", async () => {
     const b = await approvedBuyer();
@@ -187,13 +228,17 @@ describe("5–8. quantities, tiers, cart persistence and a ₪300,000 order", ()
     expect(cart.lines[0].quantity).toBe(25);
     expect(cart.currency).toBe("EUR");
   });
-  it("enforces the minimum order value (₪50,000)", async () => {
-    const b = await approvedBuyer();
-    const { v } = await variantOf("samsung-990-pro-2tb-m-2-2280");
-    await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 20 }], "set");
-    const cart = await viewCart(b.actor, "ILS");
-    expect(cart.minimum!.met).toBe(false);
-    await expect(placeOrderFromCart(b.actor, checkout(b) as never)).rejects.toThrow(/cannot be placed/);
+  it("enforces a minimum order value only when staff configure one", async () => {
+    const before = (await getSettings()).minimumOrderValue;
+    await setSetting("minimumOrderValue", { amountMinor: 5_000_000, currency: "ILS" }, null);
+    try {
+      const b = await approvedBuyer();
+      const { v } = await variantOf("samsung-990-pro-2tb-m-2-2280");
+      await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 20 }], "set");
+      const cart = await viewCart(b.actor, "ILS");
+      expect(cart.minimum!.met).toBe(false);
+      await expect(placeOrderFromCart(b.actor, checkout(b) as never)).rejects.toThrow(/cannot be placed/);
+    } finally { await setSetting("minimumOrderValue", before, null); }
   });
   it("calculates an order above ₪300,000 exactly, with VAT and freight", async () => {
     const b = await approvedBuyer();
@@ -463,9 +508,9 @@ describe("16–17. access restrictions and company isolation", () => {
   it("restricts admin actions by role", async () => {
     const b = await approvedBuyer();
     const catalogRole = await staff("CATALOG");
-    const r = await registerBusiness(regInput(), [fakeDoc()]);
-    await expect(changeCompanyStatus(b.actor, r.companyId, "APPROVED", "")).rejects.toThrow(/permission/);
-    await expect(changeCompanyStatus(catalogRole, r.companyId, "APPROVED", "")).rejects.toThrow(/permission/);
+    const r = await registerCustomer(regInput());
+    await expect(changeCompanyStatus(b.actor, r.companyId, "SUSPENDED", "Not allowed for buyers")).rejects.toThrow(/permission/);
+    await expect(changeCompanyStatus(catalogRole, r.companyId, "SUSPENDED", "Not allowed for catalog staff")).rejects.toThrow(/permission/);
     const order = await paidReadyOrder(b);
     await expect(confirmOrder(b.actor, order.id, {})).rejects.toThrow(/permission/);
     await expect(recordManualPayment(b.actor, order.id, { amount: "1", reference: "XXXX" })).rejects.toThrow(/permission/);

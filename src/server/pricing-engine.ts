@@ -48,7 +48,7 @@ export async function priceLines(tx: DbOrTx, companyId: string, input: LineInput
     if (!r) { issues.push("A product in your list is no longer available."); continue; }
     const { v, p } = r;
     const lineIssues: string[] = [];
-    const q = validateQuantity(l.quantity, { moq: p.moq, orderIncrement: p.orderIncrement, availableQty: p.availableQty, availabilityVerified: p.availabilityVerified, name: p.name });
+    const q = validateQuantity(l.quantity, { moq: p.moq, orderIncrement: p.orderIncrement, availableQty: p.availableQty, availabilityVerified: p.availabilityVerified, name: p.name }, settings.orderRules.enforceMoq);
     if (!q.ok) lineIssues.push(q.message);
     if (!v.isActive || !p.isActive) lineIssues.push(`${p.name}: this SKU is no longer offered.`);
     else if (!opts.ignoreOrderable && !isOrderableProduct(p)) lineIssues.push(`${p.name}: not currently orderable online${p.pricingFlag === "NEEDS_REVIEW" ? " (pricing under review)" : ""} — please request a quote.`);
@@ -72,8 +72,10 @@ export async function priceLines(tx: DbOrTx, companyId: string, input: LineInput
   // Minimum order value (configured in its own currency)
   let minimum: PricedCart["minimum"] = null;
   const mov = settings.minimumOrderValue;
-  const movRate = await getRate(mov.currency, tx);
-  if (movRate) {
+  const movRate = mov.amountMinor > 0 ? await getRate(mov.currency, tx) : null;
+  if (mov.amountMinor <= 0) {
+    minimum = null; // no minimum order value configured
+  } else if (movRate) {
     const inMovCurrency = convertMinor(subtotalBaseCents, movRate.rate);
     const amt = BigInt(mov.amountMinor);
     minimum = { amountMinor: amt, currency: mov.currency, met: inMovCurrency >= amt, shortfallMinor: inMovCurrency >= amt ? 0n : amt - inMovCurrency };

@@ -59,6 +59,7 @@ export default async function Settings() {
           <ActionForm action="/api/admin/settings/orderRules" className="space-y-3" submitLabel="Save" submitClass="btn-outline">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="requireOrderConfirmation" defaultChecked={s.orderRules.requireOrderConfirmation} className="accent-deep" /> Review every order (recommended while stock is indicative)</label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="reviewFirstOrder" defaultChecked={s.orderRules.reviewFirstOrder} className="accent-deep" /> Review each account&apos;s first order</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enforceMoq" defaultChecked={s.orderRules.enforceMoq} className="accent-deep" /> Enforce product minimum order quantities and case packs (off = anyone can buy from 1 unit)</label>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="field-label" htmlFor="riskThreshold">Review orders from (USD)</label><input id="riskThreshold" name="riskThreshold" defaultValue={s.orderRules.riskReviewThresholdBaseMinor / 100} className="input num" /></div>
               <div><label className="field-label" htmlFor="newCompanyReviewDays">New account period (days)</label><input id="newCompanyReviewDays" name="newCompanyReviewDays" type="number" defaultValue={s.orderRules.newCompanyReviewDays} className="input num" /></div>

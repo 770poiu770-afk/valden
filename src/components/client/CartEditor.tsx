@@ -24,7 +24,7 @@ export function QtyEditor({ variantId, quantity, moq, increment }: { variantId: 
         <button type="button" disabled={busy || q === quantity} onClick={() => save(q)} className="btn-outline btn-sm">{busy ? "…" : t("Update", "עדכון")}</button>
       </div>
       <div className="flex gap-3 text-xs">
-        <span className="text-steel-500">{t("MOQ", "מינימום")} {moq}{increment > 1 ? t(`, steps of ${increment}`, `, בכפולות של ${increment}`) : ""}</span>
+        {moq > 1 || increment > 1 ? <span className="text-steel-500">{t("MOQ", "מינימום")} {moq}{increment > 1 ? t(`, steps of ${increment}`, `, בכפולות של ${increment}`) : ""}</span> : null}
         <button type="button" className="text-bad hover:underline" onClick={() => save(0)}>{t("Remove", "הסרה")}</button>
       </div>
       {err && <span role="alert" className="text-xs text-bad">{err}</span>}

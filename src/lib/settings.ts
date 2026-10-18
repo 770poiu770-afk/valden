@@ -28,6 +28,8 @@ export const SettingsSchema = z.object({
     riskReviewThresholdBaseMinor: z.number().int().nonnegative(),
     newCompanyReviewDays: z.number().int().nonnegative(),
     reviewFirstOrder: z.boolean(),
+    /** Open store: false lets anyone buy from 1 unit; product MOQs then only mark where volume pricing starts. */
+    enforceMoq: z.boolean().default(false),
   }),
   payments: z.object({
     paypalEnabled: z.boolean(),
@@ -44,7 +46,7 @@ export type AppSettings = z.infer<typeof SettingsSchema>;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   enabledCurrencies: ["USD", "EUR", "ILS"],
-  minimumOrderValue: { amountMinor: 5_000_000, currency: "ILS" },   // ₪50,000
+  minimumOrderValue: { amountMinor: 0, currency: "ILS" },   // no minimum (open store); set one in Admin › Settings if needed
   targetOrderValue: { amountMinor: 30_000_000, currency: "ILS" },   // ₪300,000
   pricingPolicy: {
     targetPremiumMinor: 35_000, minPremiumMinor: 30_000, maxPremiumMinor: 40_000,
@@ -67,6 +69,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     riskReviewThresholdBaseMinor: 5_000_000, // US$50,000
     newCompanyReviewDays: 30,
     reviewFirstOrder: true,
+    enforceMoq: false,
   },
   payments: {
     paypalEnabled: true,

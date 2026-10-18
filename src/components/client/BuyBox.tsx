@@ -8,7 +8,7 @@ type Props = {
   variants: { id: string; sku: string; label: string }[];
   tiers: { minQty: number; unitCents: number }[];
   wholesaleCents: number; contractCents: number | null; moq: number; increment: number;
-  currency: string; rate: string; orderable: boolean; canOrder: boolean; saved: boolean; slug: string;
+  currency: string; rate: string; orderable: boolean; canOrder: boolean; signedIn?: boolean; saved: boolean; slug: string;
 };
 
 const SYM: Record<string, string> = { USD: "$", EUR: "€", ILS: "₪" };
@@ -81,7 +81,15 @@ export function BuyBox(p: Props) {
           <Link className="btn-outline" href={`/portal/quotes/new?sku=${encodeURIComponent(sku)}&qty=${qty}`}>{t("Request quote", "בקשת הצעת מחיר")}</Link>
           <button className="btn-ghost" onClick={toggleSave} aria-pressed={saved}>{saved ? t("Saved", "נשמר") : t("Save", "שמירה")}</button>
         </div>
-      ) : null}
+      ) : !p.signedIn ? (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <Link className="btn-primary flex-1" href={`/register?next=${encodeURIComponent(`/products/${p.slug}`)}`}>{t("Create an account to order", "יצירת חשבון להזמנה")}</Link>
+            <Link className="btn-outline" href={`/login?next=${encodeURIComponent(`/products/${p.slug}`)}`}>{t("Sign in", "כניסה")}</Link>
+          </div>
+          <p className="text-xs text-steel-500">{t("Sign-up takes a minute: just an email and a password.", "ההרשמה לוקחת דקה: רק אימייל וסיסמה.")}</p>
+        </div>
+      ) : <p className="text-sm text-warn">{t("This account cannot place orders right now. Please contact us.", "החשבון הזה לא יכול לבצע הזמנות כרגע. פנו אלינו.")}</p>}
       {!p.orderable && p.canOrder && <p className="text-sm text-warn">{t("This listing is not orderable online right now. Request a quote and our trade desk will price it for you.", "לא ניתן להזמין מוצר זה באתר כרגע. בקשו הצעת מחיר וצוות המכירות יתמחר אותו עבורכם.")}</p>}
       {state.msg && <p role="status" className="rounded border border-ok/30 bg-ok-soft px-3 py-2 text-sm text-ok">{state.msg} <Link href="/portal/cart" className="link">{t("View cart", "לצפייה בסל")}</Link></p>}
       {state.err && <p role="alert" className="rounded border border-bad/30 bg-bad-soft px-3 py-2 text-sm text-bad">{state.err}</p>}

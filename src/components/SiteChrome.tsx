@@ -6,13 +6,14 @@ import { companyInfo } from "@/lib/company";
 import { DEPARTMENTS } from "@/lib/catalog-meta";
 import { departmentText } from "@/lib/labels";
 import { getT } from "@/server/locale";
+import { accountActive } from "@/lib/auth";
 import type { T } from "@/lib/i18n";
 import { LanguageSwitch } from "./client/LanguageSwitch";
 
 const nav = (t: T) => [
   { href: "/catalog", label: t("Catalog", "קטלוג") },
   { href: "/categories", label: t("Categories", "קטגוריות") },
-  { href: "/services", label: t("Wholesale services", "שירותי סיטונאות") },
+  { href: "/services", label: t("Bulk buying", "קנייה בכמויות") },
   { href: "/quote", label: t("Request a quote", "בקשת הצעת מחיר") },
   { href: "/about", label: t("About", "אודות") },
   { href: "/contact", label: t("Contact", "צור קשר") },
@@ -22,14 +23,14 @@ export async function SiteHeader() {
   const { t } = await getT();
   const NAV = nav(t);
   const actor = await currentActor();
-  const count = actor && !actor.isStaff && actor.companyStatus === "APPROVED" ? await cartCount(actor.userId) : 0;
+  const count = actor && !actor.isStaff && accountActive(actor.companyStatus) ? await cartCount(actor.userId) : 0;
   return (
     <header className="border-b border-line bg-white">
       <div className="bg-deep text-[13px] text-deep-100">
         <div className="container-page flex h-9 items-center justify-between gap-4">
-          <p className="truncate">{t("Trade accounts only — wholesale pricing is shown to verified business buyers.", "לחשבונות עסקיים בלבד — מחירי סיטונאות מוצגים לקונים עסקיים מאומתים.")}</p>
+          <p className="truncate">{t("Electronics for everyone — from a single unit to bulk orders with volume pricing.", "אלקטרוניקה לכולם — מיחידה אחת ועד הזמנות גדולות במחירי כמות.")}</p>
           <div className="flex shrink-0 items-center gap-4">
-            {!actor && <Link href="/register" className="hidden font-semibold text-tag hover:underline sm:block">{t("Open a trade account", "פתיחת חשבון עסקי")}</Link>}
+            {!actor && <Link href="/register" className="hidden font-semibold text-tag hover:underline sm:block">{t("Create an account", "יצירת חשבון")}</Link>}
             <LanguageSwitch className="inline-flex min-h-6 items-center font-semibold text-white underline-offset-2 hover:underline" />
           </div>
         </div>
@@ -42,11 +43,11 @@ export async function SiteHeader() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           {!actor && (<>
             <Link href="/login" className="btn-ghost btn-sm hidden sm:inline-flex">{t("Sign in", "כניסה")}</Link>
-            <Link href="/register" className="btn-primary btn-sm">{t("Register business", "רישום עסק")}</Link>
+            <Link href="/register" className="btn-primary btn-sm">{t("Sign up", "הרשמה")}</Link>
           </>)}
           {actor?.isStaff && <Link href="/admin" className="btn-deep btn-sm">{t("Admin", "ניהול")}</Link>}
           {actor && !actor.isStaff && (<>
-            {actor.companyStatus === "APPROVED" && (
+            {accountActive(actor.companyStatus) && (
               <Link href="/portal/cart" className="btn-outline btn-sm" aria-label={t(`Cart, ${count} lines`, `סל, ${count} שורות`)}>
                 <span aria-hidden>{t("Cart", "סל")}</span> <span aria-hidden className="num rounded-sm bg-deep px-1.5 text-xs text-white">{count}</span>
               </Link>
@@ -75,7 +76,7 @@ export async function SiteFooter() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <Logo inverted label={t("Valden — home", "Valden — דף הבית")} />
-          <p className="mt-4 max-w-xs text-sm text-deep-200">{t("Wholesale electronics for registered businesses. Every account is verified before pricing and ordering are enabled.", "אלקטרוניקה בסיטונאות לעסקים רשומים. כל חשבון נבדק לפני שמחירים והזמנות נפתחים.")}</p>
+          <p className="mt-4 max-w-xs text-sm text-deep-200">{t("Electronics for shoppers and businesses — buy one unit or thousands, with automatic volume pricing.", "אלקטרוניקה לקונים פרטיים ולעסקים — יחידה אחת או אלפים, עם מחירי כמות אוטומטיים.")}</p>
           <div className="mt-5 space-y-1 text-sm">
             {c.legalName && <p className="text-white">{c.legalName}</p>}
             {c.address && <p>{c.address}</p>}
@@ -84,8 +85,8 @@ export async function SiteFooter() {
           </div>
         </div>
         <FooterCol title={t("Departments", "מחלקות")} links={DEPARTMENTS.map((x) => [`/catalog?dept=${x.slug}`, departmentText(x, l).name])} />
-        <FooterCol title={t("Trade", "סחר")} links={[["/register", t("Register a business", "רישום עסק")], ["/login", t("Sign in", "כניסה")], ["/quote", t("Request a quote", "בקשת הצעת מחיר")], ["/services", t("Wholesale services", "שירותי סיטונאות")], ["/faq", t("FAQ", "שאלות נפוצות")], ["/contact", t("Contact the trade desk", "פנייה לצוות המכירות")]]} />
-        <FooterCol title={t("Policies", "מדיניות")} links={[["/policies/shipping", t("Shipping policy", "מדיניות משלוחים")], ["/policies/returns", t("Returns & refunds", "החזרות והחזרים כספיים")], ["/terms", t("Terms of trade", "תנאי סחר")], ["/privacy", t("Privacy policy", "מדיניות פרטיות")], ["/accessibility", t("Accessibility statement", "הצהרת נגישות")], ["/about", t("About Valden", "אודות Valden")]]} />
+        <FooterCol title={t("Shop", "קנייה")} links={[["/register", t("Create an account", "יצירת חשבון")], ["/login", t("Sign in", "כניסה")], ["/quote", t("Request a quote", "בקשת הצעת מחיר")], ["/services", t("Bulk & business buying", "קנייה בכמויות ולעסקים")], ["/faq", t("FAQ", "שאלות נפוצות")], ["/contact", t("Contact us", "צור קשר")]]} />
+        <FooterCol title={t("Policies", "מדיניות")} links={[["/policies/shipping", t("Shipping policy", "מדיניות משלוחים")], ["/policies/returns", t("Returns & refunds", "החזרות והחזרים כספיים")], ["/terms", t("Terms of sale", "תנאי מכירה")], ["/privacy", t("Privacy policy", "מדיניות פרטיות")], ["/accessibility", t("Accessibility statement", "הצהרת נגישות")], ["/about", t("About Valden", "אודות Valden")]]} />
       </div>
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-deep-200 sm:flex-row sm:justify-between">

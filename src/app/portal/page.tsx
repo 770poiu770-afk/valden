@@ -2,68 +2,32 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { businessDocuments, companyStatusEvents, orders, quotes } from "@/db/schema";
+import { companyStatusEvents, orders, quotes } from "@/db/schema";
 import { currentActor } from "@/server/http";
 import { cartCount } from "@/server/cart";
 import { expireQuotes } from "@/server/quotes";
 import { Empty, Money, Notice, PageHeader, Stat, StatusPill, fmtDate } from "@/components/ui";
 import { getT } from "@/server/locale";
+import { accountActive } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata() { const { t } = await getT(); return { title: t("Dashboard", "לוח בקרה") }; }
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ registered?: string }> }) {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
   const actor = await currentActor();
   if (!actor?.companyId) redirect("/login");
   const sp = await searchParams;
   const { l, t } = await getT();
 
-  if (actor.companyStatus !== "APPROVED") {
-    const [events, docs] = await Promise.all([
-      db.select().from(companyStatusEvents).where(eq(companyStatusEvents.companyId, actor.companyId)).orderBy(desc(companyStatusEvents.createdAt)),
-      db.select().from(businessDocuments).where(eq(businessDocuments.companyId, actor.companyId)).orderBy(desc(businessDocuments.createdAt)),
-    ]);
+  if (!accountActive(actor.companyStatus)) {
+    // Only suspended or closed accounts are blocked in the open store.
+    const events = await db.select().from(companyStatusEvents).where(eq(companyStatusEvents.companyId, actor.companyId)).orderBy(desc(companyStatusEvents.createdAt));
     const s = actor.companyStatus;
     const latestReason = events.find((e) => e.toStatus === s)?.reason;
-    const steps = [
-      { label: t("Application submitted", "הבקשה נשלחה"), done: true },
-      { label: t("Verification by our trade desk", "אימות על ידי צוות המכירות"), done: false, current: s === "PENDING_REVIEW" || s === "MORE_INFO_REQUIRED" },
-      { label: t("Wholesale access enabled", "גישה לסיטונאות נפתחה"), done: false },
-    ];
     return (
       <div className="space-y-6">
-        <PageHeader title={s === "REJECTED" ? t("Application not approved", "הבקשה לא אושרה") : s === "SUSPENDED" ? t("Account suspended", "החשבון מושעה") : t("Your application is under review", "הבקשה שלכם בבדיקה")}
-          intro={s === "PENDING_REVIEW" ? t("We review every trade application manually. You will receive an email when pricing and ordering are enabled.", "אנחנו בודקים כל בקשה ידנית. תקבלו מייל כשמחירים והזמנות ייפתחו.") : undefined} />
-        {sp.registered && <Notice tone="ok" title={t("Application received", "הבקשה התקבלה")}>{t("Thank you. Your company details and documents have been submitted.", "תודה. פרטי החברה והמסמכים נשלחו.")}</Notice>}
-        {s === "MORE_INFO_REQUIRED" && <Notice tone="warn" title={t("More information needed", "נדרש מידע נוסף")}>{latestReason ?? t("Please check your email for details.", "פרטים נשלחו אליכם במייל.")} {t("Upload additional documents from", "אפשר להעלות מסמכים נוספים בעמוד")} <Link className="link" href="/portal/company">{t("Company & addresses", "חברה וכתובות")}</Link>.</Notice>}
-        {(s === "REJECTED" || s === "SUSPENDED") && <Notice tone="bad">{latestReason ?? t("Contact the trade desk for details.", "לפרטים, פנו לצוות המכירות.")} <Link className="link" href="/contact?topic=Trade+account">{t("Contact the trade desk", "פנייה לצוות המכירות")}</Link>.</Notice>}
-        {(s === "PENDING_REVIEW" || s === "MORE_INFO_REQUIRED") && (
-          <ol className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
-            {steps.map((st, i) => (
-              <li key={st.label} className={`p-5 ${st.current ? "bg-tag-soft" : "bg-white"}`}>
-                <span className={`num mb-2 flex h-7 w-7 items-center justify-center rounded-sm text-sm font-bold ${st.done ? "bg-ok text-white" : st.current ? "bg-deep text-white" : "bg-paper text-steel-500 border border-line"}`}>{st.done ? "✓" : i + 1}</span>
-                <p className="font-semibold text-deep-900">{st.label}</p>
-                {st.current && <p className="text-sm text-steel-500">{t("In progress", "בתהליך")}</p>}
-              </li>
-            ))}
-          </ol>
-        )}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="panel panel-pad">
-            <h2 className="mb-3 font-semibold">{t("Verification history", "היסטוריית אימות")}</h2>
-            <ul className="space-y-3 text-sm">{events.map((e) => (
-              <li key={e.id} className="flex items-start justify-between gap-3"><div><StatusPill status={e.toStatus} l={l} />{e.reason && <p className="mt-1 text-steel-500" dir="auto">{e.reason}</p>}</div><span className="shrink-0 text-xs text-steel-500">{fmtDate(e.createdAt, true, l)}</span></li>
-            ))}</ul>
-          </section>
-          <section className="panel panel-pad">
-            <h2 className="mb-3 font-semibold">{t("Documents submitted", "מסמכים שנשלחו")}</h2>
-            <ul className="space-y-2 text-sm">{docs.map((d) => (
-              <li key={d.id} className="flex items-center justify-between gap-3"><span dir="auto">{d.docType}<span className="block text-xs text-steel-500">{d.originalName}</span></span><StatusPill l={l} status={d.status === "ACCEPTED" ? "ACCEPTED_DOC" : d.status} label={d.status === "PENDING" ? t("Awaiting review", "ממתין לבדיקה") : d.status === "ACCEPTED" ? t("Accepted", "התקבל") : undefined} /></li>
-            ))}</ul>
-            <Link href="/portal/company" className="btn-outline btn-sm mt-4">{t("Upload another document", "העלאת מסמך נוסף")}</Link>
-          </section>
-        </div>
-        <p className="text-sm text-steel-500">{l === "he" ? <>בינתיים אפשר <Link href="/catalog" className="link">לעיין בקטלוג</Link> — המחירים יופיעו לאחר האישור.</> : <>While you wait, you can <Link href="/catalog" className="link">browse the catalog</Link> — prices appear once you are approved.</>}</p>
+        <PageHeader title={s === "REJECTED" ? t("Account closed", "החשבון סגור") : t("Account suspended", "החשבון מושעה")} />
+        <Notice tone="bad"><span dir="auto">{latestReason ?? t("Please contact us for details.", "לפרטים, פנו אלינו.")}</span> <Link className="link" href="/contact?topic=Order+support">{t("Contact us", "צור קשר")}</Link>.</Notice>
       </div>
     );
   }
@@ -79,6 +43,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const liveOffers = offers.filter((q) => q.status === "OFFERED");
   return (
     <div className="space-y-8">
+      {sp.welcome && <Notice tone="ok" title={t("Your account is ready", "החשבון שלכם מוכן")}>{t("You can order right away — a single unit or in bulk. Your delivery address is asked for at checkout.", "אפשר להזמין מיד — יחידה אחת או בכמויות. כתובת המשלוח תתבקש בתשלום.")}</Notice>}
       <PageHeader title={t(`Welcome back, ${actor.fullName.split(" ")[0]}`, `שלום, ${actor.fullName.split(" ")[0]}`)} actions={<><Link href="/portal/bulk" className="btn-outline">{t("Bulk order builder", "הזמנה מרשימה")}</Link><Link href="/catalog" className="btn-deep">{t("Browse catalog", "לקטלוג")}</Link></>} />
       {awaiting > 0 && <Notice tone="warn" title={t(`${awaiting} order${awaiting > 1 ? "s" : ""} awaiting payment`, awaiting > 1 ? `${awaiting} הזמנות ממתינות לתשלום` : "הזמנה אחת ממתינה לתשלום")}>{t("Confirmed orders are held until payment is verified.", "הזמנות מאושרות מוחזקות עד לאימות התשלום.")} <Link className="link" href="/portal/orders">{t("View orders", "לצפייה בהזמנות")}</Link></Notice>}
       {liveOffers.length > 0 && <Notice tone="info" title={t("Offers waiting for your decision", "הצעות שממתינות להחלטה שלכם")}>{liveOffers.map((q) => <span key={q.id} className="me-3"><Link className="link" href={`/portal/quotes/${q.id}`}>{q.number}</Link> ({t("expires", "בתוקף עד")} {fmtDate(q.offerExpiresAt, false, l)})</span>)}</Notice>}

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, contractPrices, priceTiers, products, variants } from "@/db/schema";
-import { can, type Actor } from "@/lib/auth";
+import type { Actor } from "@/lib/auth";
 import { resolveUnitPrice, type Tier } from "@/lib/pricing";
 import { convertMinorInverse, isCurrency, type Currency } from "@/lib/money";
 import { getRate } from "@/lib/fx";
@@ -20,9 +20,11 @@ export function isOrderableProduct(p: { isActive: boolean; purchasable: boolean;
   return p.isActive && p.availability !== "UNAVAILABLE" && p.pricingFlag !== "NEEDS_REVIEW" && (p.purchasable || (p.isSample && sampleOk));
 }
 
-export async function searchCatalog(qs: CatalogQuery, actor: Actor | null) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for callers; prices are public in the open store
+export async function searchCatalog(qs: CatalogQuery, _actor: Actor | null) {
   const where: SQL[] = [eq(products.isActive, true)];
-  const showPrices = can(actor, "catalog.view_prices");
+  // Open store: prices are public. (Contract prices and staff-only fields still need the right account.)
+  const showPrices = true;
   if (qs.q && qs.q.trim()) {
     const terms = qs.q.trim().toLowerCase().slice(0, 100).split(/\s+/).filter(Boolean).slice(0, 6);
     for (const t of terms) where.push(sql`${products.searchText} LIKE ${"%" + t.replace(/[%_\\]/g, "\\$&") + "%"}`);
@@ -108,7 +110,7 @@ export async function getProductDetail(slug: string, actor: Actor | null) {
     db.select().from(variants).where(and(eq(variants.productId, p.id), eq(variants.isActive, true))).orderBy(asc(variants.sku)),
     db.select().from(priceTiers).where(eq(priceTiers.productId, p.id)).orderBy(asc(priceTiers.minQty)),
   ]);
-  const showPrices = can(actor, "catalog.view_prices");
+  const showPrices = true;
   let contract: number | null = null;
   if (showPrices && actor?.companyId) contract = await activeContractPrice(actor.companyId, p.id);
   // Strip staff-only fields for non-staff

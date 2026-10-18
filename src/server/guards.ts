@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { currentActor } from "./http";
-import type { Actor } from "@/lib/auth";
+import { accountActive, type Actor } from "@/lib/auth";
 import type { Permission } from "@/lib/rbac";
 
 export async function requireApprovedBuyer(): Promise<Actor & { companyId: string }> {
   const a = await currentActor();
   if (!a) redirect("/login");
   if (a.isStaff) redirect("/admin");
-  if (!a.companyId || a.companyStatus !== "APPROVED") redirect("/portal");
+  if (!a.companyId || !accountActive(a.companyStatus)) redirect("/portal");
   return a as Actor & { companyId: string };
 }
 

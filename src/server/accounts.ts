@@ -1,14 +1,13 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/db";
+import { db, type DbOrTx } from "@/db";
 import {
-  addresses, businessDocuments, companies, companyStatusEvents, passwordResetTokens, roles, users,
+  addresses, companies, companyStatusEvents, passwordResetTokens, roles, users,
 } from "@/db/schema";
 import { audit } from "@/lib/audit";
 import { destroyUserSessions, hashPassword, passwordIsStrong, PASSWORD_RULE, randomToken, sha256, type Actor } from "@/lib/auth";
 import { badRequest, conflict, forbidden, notFound } from "@/lib/errors";
 import { appUrl, queueEmail } from "./mail";
-import type { StoredFile } from "./uploads";
 
 const countryCode = z.string().trim().toUpperCase().regex(/^[A-Z]{2}$/, "Use a 2-letter ISO country code");
 const optional = (max: number) => z.string().trim().max(max).optional().transform((v) => (v ? v : undefined));
@@ -24,68 +23,88 @@ export const AddressInput = z.object({
   countryCode,
 });
 
+/**
+ * Open-store sign-up: email + password is enough. Name, country and business details are optional;
+ * businesses can add a company name and VAT number (for invoices) now or later in their account.
+ */
 export const RegistrationInput = z.object({
-  legalName: z.string().trim().min(2).max(200),
-  tradingName: optional(200),
-  countryCode,
-  registrationNumber: z.string().trim().min(2, "Company registration number is required").max(60),
-  taxId: optional(60),
-  businessType: z.enum(["Wholesaler", "Distributor", "Retail chain", "Electronics retailer", "Hardware reseller", "Corporate IT procurement", "Importer / exporter", "Other"]),
-  website: optional(200),
-  businessEmail: z.string().trim().toLowerCase().email().max(200),
-  businessPhone: z.string().trim().min(6).max(40),
-  expectedMonthlyVolume: optional(60),
-  contactName: z.string().trim().min(2).max(120),
-  jobTitle: z.string().trim().min(2).max(120),
-  contactPhone: optional(40),
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(12).max(200),
-  billing: AddressInput,
-  shipping: AddressInput,
-  docTypes: z.array(z.string().max(120)).max(6).default([]),
-  acceptTerms: z.literal(true, { errorMap: () => ({ message: "You must accept the terms of trade" }) }),
-  declareAuthorized: z.literal(true, { errorMap: () => ({ message: "You must confirm you are authorised to register this business" }) }),
+  fullName: optional(120),
+  countryCode: countryCode.optional().or(z.literal("").transform(() => undefined)),
+  phone: optional(40),
+  isBusiness: z.boolean().default(false),
+  companyName: optional(200),
+  taxId: optional(60),
+  acceptTerms: z.literal(true, { errorMap: () => ({ message: "You must accept the terms and privacy policy" }) }),
 });
-export type RegistrationInput = z.infer<typeof RegistrationInput>;
+export type RegistrationInput = z.input<typeof RegistrationInput>;
 
-const FREE_MAIL = /@(gmail|yahoo|hotmail|outlook|live|icloud|aol|proton|protonmail|gmx|mail)\./i;
+const nameFromEmail = (email: string) => email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 120) || "Customer";
+const currencyFor = (cc: string) => (cc === "IL" ? "ILS" : ["DE", "FR", "IT", "ES", "NL", "BE", "AT", "IE", "PT", "FI", "GR"].includes(cc) ? "EUR" : "USD");
 
-export async function registerBusiness(input: RegistrationInput, docs: StoredFile[], ip?: string) {
+export async function registerCustomer(raw: RegistrationInput, ip?: string) {
+  const input = RegistrationInput.parse(raw);
   if (!passwordIsStrong(input.password)) throw badRequest(PASSWORD_RULE);
-  if (docs.length < 1) throw badRequest("Please upload at least one business verification document.");
   const exists = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
   if (exists.length) throw conflict("An account with this email already exists. Sign in or reset your password.");
   const roleId = (await db.select().from(roles).where(eq(roles.key, "BUYER_ADMIN")))[0]?.id;
   if (!roleId) throw new Error("Roles not seeded");
   const passwordHash = await hashPassword(input.password);
-  const flags: string[] = [];
-  if (FREE_MAIL.test(input.email)) flags.push("Contact uses a free webmail domain");
+  const fullName = input.fullName ?? nameFromEmail(input.email);
+  const cc = input.countryCode ?? "IL";
+  const business = input.isBusiness && !!input.companyName;
 
-  const result = await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
+    // Every customer gets an account record (the "company" row) so carts, orders, addresses and
+    // isolation work the same for individuals and businesses. It is active immediately.
     const co = (await tx.insert(companies).values({
-      legalName: input.legalName, tradingName: input.tradingName ?? null, countryCode: input.countryCode,
-      registrationNumber: input.registrationNumber, taxId: input.taxId ?? null, businessType: input.businessType,
-      website: input.website ?? null, businessEmail: input.businessEmail, businessPhone: input.businessPhone,
-      expectedMonthlyVolume: input.expectedMonthlyVolume ?? null, status: "PENDING_REVIEW",
-      preferredCurrency: input.countryCode === "IL" ? "ILS" : ["DE", "FR", "IT", "ES", "NL", "BE", "AT", "IE", "PT", "FI", "GR"].includes(input.countryCode) ? "EUR" : "USD",
-      internalNotes: flags.length ? `Auto-flags: ${flags.join("; ")}` : null,
+      legalName: business ? input.companyName! : fullName, accountType: business ? "BUSINESS" : "PERSONAL",
+      countryCode: cc, taxId: input.taxId ?? null, businessType: business ? "Business" : "Individual",
+      businessEmail: input.email, businessPhone: input.phone ?? null, status: "APPROVED", approvedAt: new Date(), preferredCurrency: currencyFor(cc),
     }).returning())[0];
-    const user = (await tx.insert(users).values({
-      companyId: co.id, roleId, email: input.email, passwordHash, fullName: input.contactName, jobTitle: input.jobTitle, phone: input.contactPhone ?? null,
-    }).returning())[0];
-    for (const [kind, a] of [["BILLING", input.billing], ["SHIPPING", input.shipping]] as const) {
-      await tx.insert(addresses).values({ companyId: co.id, kind, label: kind === "BILLING" ? "Billing" : "Primary delivery", isDefault: true, ...a, phone: a.phone ?? null, line2: a.line2 ?? null, region: a.region ?? null, postalCode: a.postalCode ?? null });
-    }
-    for (const [i, d] of docs.entries()) {
-      await tx.insert(businessDocuments).values({ companyId: co.id, docType: input.docTypes[i] ?? "Other supporting document", uploadedById: user.id, ...d });
-    }
-    await tx.insert(companyStatusEvents).values({ companyId: co.id, toStatus: "PENDING_REVIEW", reason: "Business registration submitted", actorUserId: user.id });
-    await audit({ userId: user.id, email: user.email }, "company.register", "company", co.id, { legalName: co.legalName, country: co.countryCode, documents: docs.length }, tx, ip);
-    await queueEmail(user.email, "Valden — registration received",
-      `Hello ${input.contactName},\n\nWe have received the business registration for ${input.legalName}. Our trade desk reviews every application and its documents before wholesale pricing and ordering are enabled. We will email you when the review is complete.\n\nTrack status: ${appUrl("/portal")}\n`, tx);
+    const user = (await tx.insert(users).values({ companyId: co.id, roleId, email: input.email, passwordHash, fullName, phone: input.phone ?? null }).returning())[0];
+    await tx.insert(companyStatusEvents).values({ companyId: co.id, toStatus: "APPROVED", reason: "Account created (self-service sign-up)", actorUserId: user.id });
+    await audit({ userId: user.id, email: user.email }, "account.register", "company", co.id, { accountType: co.accountType, country: cc }, tx, ip);
+    await queueEmail(user.email, "Valden — welcome",
+      `Hello ${fullName},\n\nYour Valden account is ready. You can browse the catalog, add products to your cart and order — single units or large quantities.\n\nYour account: ${appUrl("/portal")}\n`, tx);
     return { companyId: co.id, userId: user.id };
   });
-  return result;
+}
+
+/** Customer-editable account details. Business fields are optional and used on invoices. */
+export const AccountProfileInput = z.object({
+  fullName: z.string().trim().min(2).max(120),
+  phone: optional(40),
+  countryCode,
+  companyName: optional(200),
+  taxId: optional(60),
+});
+export async function updateAccountProfile(actor: Actor, raw: unknown) {
+  const companyId = actor.companyId;
+  if (!companyId || actor.isStaff) throw forbidden();
+  const input = AccountProfileInput.parse(raw);
+  return db.transaction(async (tx) => {
+    const isBusiness = !!input.companyName;
+    await tx.update(users).set({ fullName: input.fullName, phone: input.phone ?? null }).where(eq(users.id, actor.userId));
+    await tx.update(companies).set({
+      legalName: input.companyName ?? input.fullName, accountType: isBusiness ? "BUSINESS" : "PERSONAL", businessType: isBusiness ? "Business" : "Individual",
+      countryCode: input.countryCode, taxId: input.taxId ?? null, businessPhone: input.phone ?? null, updatedAt: new Date(),
+    }).where(eq(companies.id, companyId));
+    await audit(actor, "account.profile_update", "company", companyId, { accountType: isBusiness ? "BUSINESS" : "PERSONAL" }, tx);
+    return { message: "Saved." };
+  });
+}
+
+/** Address entered during checkout by a customer who has none saved yet. */
+export async function saveCheckoutAddress(actor: Actor & { companyId: string }, kind: "SHIPPING" | "BILLING", raw: unknown, tx: DbOrTx = db) {
+  const a = AddressInput.parse(raw);
+  const has = await tx.select({ id: addresses.id }).from(addresses).where(and(eq(addresses.companyId, actor.companyId), eq(addresses.kind, kind))).limit(1);
+  const row = (await tx.insert(addresses).values({
+    companyId: actor.companyId, kind, label: kind === "SHIPPING" ? "Delivery" : "Billing", isDefault: !has.length,
+    contactName: a.contactName, phone: a.phone ?? null, line1: a.line1, line2: a.line2 ?? null, city: a.city, region: a.region ?? null, postalCode: a.postalCode ?? null, countryCode: a.countryCode,
+  }).returning())[0];
+  return row.id;
 }
 
 export type CompanyStatus = "PENDING_REVIEW" | "MORE_INFO_REQUIRED" | "APPROVED" | "REJECTED" | "SUSPENDED";

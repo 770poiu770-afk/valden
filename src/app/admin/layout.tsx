@@ -7,7 +7,7 @@ import { LocaleProvider } from "@/components/client/LocaleProvider";
 
 const NAV: { group: string; items: [string, string, Permission][] }[] = [
   { group: "Overview", items: [["/admin", "Dashboard", "admin.access"]] },
-  { group: "Customers", items: [["/admin/companies", "Business accounts", "companies.review"], ["/admin/inquiries", "Enquiries", "customers.manage"]] },
+  { group: "Customers", items: [["/admin/companies", "Customer accounts", "companies.review"], ["/admin/inquiries", "Enquiries", "customers.manage"]] },
   { group: "Catalog", items: [["/admin/products", "Products & SKUs", "catalog.manage"], ["/admin/pricing", "Pricing", "pricing.manage"], ["/admin/import", "Catalog import", "catalog.manage"]] },
   { group: "Sales", items: [["/admin/quotes", "Quotes", "quotes.manage"], ["/admin/orders", "Orders", "orders.manage"]] },
   { group: "Finance", items: [["/admin/payments", "Payments", "payments.view"], ["/admin/refunds", "Refunds", "payments.view"]] },

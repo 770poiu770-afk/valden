@@ -12,7 +12,7 @@ import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db, pool } from "../src/db";
-import { passwordResetTokens, products, roles, users } from "../src/db/schema";
+import { passwordResetTokens, products, roles, settings, users } from "../src/db/schema";
 import { bootstrapReferenceData } from "../src/server/bootstrap";
 import { importProducts } from "../src/server/catalog-import";
 import { hashPassword, randomToken, sha256 } from "../src/lib/auth";
@@ -25,6 +25,15 @@ async function main() {
 
   await bootstrapReferenceData();
   console.log("Reference data ready.");
+
+  // Open-store change (Oct 2026): the old B2B default minimum order value (₪50,000) is removed.
+  // Only a value still equal to that old default is cleared; a minimum set deliberately by staff is kept.
+  const mov = (await db.select().from(settings).where(eq(settings.key, "minimumOrderValue")))[0];
+  const v = mov?.value as { amountMinor?: number; currency?: string } | undefined;
+  if (v && v.amountMinor === 5_000_000 && v.currency === "ILS") {
+    await db.update(settings).set({ value: { amountMinor: 0, currency: "ILS" }, updatedAt: new Date() }).where(eq(settings.key, "minimumOrderValue"));
+    console.log("Minimum order value: old B2B default (₪50,000) removed.");
+  }
 
   // Add listings that are new in data/catalog.json; never touch existing ones (staff may have edited them).
   const catalog = JSON.parse(readFileSync("data/catalog.json", "utf8")) as { products: { slug: string }[] };

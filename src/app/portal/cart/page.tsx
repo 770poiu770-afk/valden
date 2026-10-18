@@ -22,6 +22,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
   const cart = await viewCart(actor, currency);
   const issues = blockingIssues(cart);
   const cur = cart.currency;
+  const enforceMoq = cart.settings.orderRules.enforceMoq;
   if (!cart.lines.length) return (<><PageHeader title={t("Cart", "סל")} /><Empty title={t("Your cart is empty", "הסל ריק")} action={<div className="flex gap-2"><Link href="/catalog" className="btn-deep">{t("Browse catalog", "לקטלוג")}</Link><Link href="/portal/bulk" className="btn-outline">{t("Paste a SKU list", "הדבקת רשימת מק״טים")}</Link></div>}>{t("Your cart is saved to your account, so you can build an order across several sessions.", "הסל נשמר בחשבון, כך שאפשר לבנות הזמנה לאורך כמה כניסות.")}</Empty></>);
   const pct = cart.minimum ? Math.min(100, Number(((cart.minimum.amountMinor - cart.minimum.shortfallMinor) * 100n) / (cart.minimum.amountMinor || 1n))) : 100;
 
@@ -38,7 +39,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
               {l.issues.map((i) => <p key={i} className="mt-1 text-xs font-medium text-bad">{tm(i)}</p>)}
               <div className="mt-3 flex items-end justify-between gap-3">
                 <div className="text-sm"><p className="text-xs text-steel-500">{t("Unit", "ליחידה")} <Money cents={l.unitCents} currency={cur} /></p><p className="font-semibold text-deep-900"><Money cents={l.lineCents} currency={cur} /></p></div>
-                <QtyEditor variantId={l.variantId} quantity={l.quantity} moq={l.moq} increment={l.orderIncrement} />
+                <QtyEditor variantId={l.variantId} quantity={l.quantity} moq={enforceMoq ? l.moq : 1} increment={enforceMoq ? l.orderIncrement : 1} />
               </div>
             </li>
           ))}
@@ -62,7 +63,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                     </div>
                   </td>
                   <td className="text-end"><Money cents={l.unitCents} currency={cur} /></td>
-                  <td className="text-end"><QtyEditor variantId={l.variantId} quantity={l.quantity} moq={l.moq} increment={l.orderIncrement} /></td>
+                  <td className="text-end"><QtyEditor variantId={l.variantId} quantity={l.quantity} moq={enforceMoq ? l.moq : 1} increment={enforceMoq ? l.orderIncrement : 1} /></td>
                   <td className="text-end font-semibold text-deep-900"><Money cents={l.lineCents} currency={cur} /></td>
                 </tr>
               ))}
