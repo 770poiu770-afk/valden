@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "./LocaleProvider";
 import { useEffect, useRef, type ReactNode } from "react";
 
 /**
@@ -7,6 +8,7 @@ import { useEffect, useRef, type ReactNode } from "react";
  */
 export function FilterPanel({ activeCount, children }: { activeCount: number; children: ReactNode }) {
   const ref = useRef<HTMLDetailsElement>(null);
+  const t = useT();
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
     const sync = () => { if (ref.current) ref.current.open = mq.matches; };
@@ -17,7 +19,7 @@ export function FilterPanel({ activeCount, children }: { activeCount: number; ch
   return (
     <details ref={ref} open className="group self-start lg:sticky lg:top-4">
       <summary className="btn-outline mb-3 w-full cursor-pointer list-none justify-between lg:hidden">
-        <span>Filters{activeCount > 0 ? ` (${activeCount} active)` : ""}</span>
+        <span>{t("Filters", "סינון")}{activeCount > 0 ? t(` (${activeCount} active)`, ` (${activeCount} פעילים)`) : ""}</span>
         <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
       </summary>
       {children}

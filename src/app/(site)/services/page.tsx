@@ -2,11 +2,30 @@ import Link from "next/link";
 import { ContentPage } from "@/components/ContentPage";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
-export const metadata = { title: "Wholesale services" };
+import { getT } from "@/server/locale";
+export async function generateMetadata() { const { t } = await getT(); return { title: t("Wholesale services", "שירותי סיטונאות") }; }
 export const dynamic = "force-dynamic";
 export default async function Services() {
   const s = await getSettings();
   const mov = formatMoney(BigInt(s.minimumOrderValue.amountMinor), s.minimumOrderValue.currency).replace(/\.00$/, "");
+  const { l } = await getT();
+  if (l === "he") return (
+    <ContentPage title="שירותי סיטונאות" intro="הזמנה באתר לכמויות רגילות, הצעות מחיר רשמיות לפרויקטים, ותהליך מבוקר מההזמנה ועד המשלוח.">
+      <h2>הזמנה עסקית באתר</h2>
+      <p>חשבונות מאושרים מזמינים ישירות מהקטלוג. בכל מוצר מוצגים כמות ההזמנה המינימלית, כפולות ההזמנה ומחירי מדרגות הכמות. סכום ההזמנה המינימלי באתר הוא כרגע <span className="num">{mov}</span>. הסכומים תמיד מחושבים על ידי המערכת שלנו בתשלום — לעולם לא לפי מה שהדפדפן שולח.</p>
+      <h2>הצעות מחיר לכמויות גדולות</h2>
+      <p>שלחו רשימת מק״טים, כמויות ומחירי יעד. צוות המכירות ישיב בהצעה רשמית עם תאריך תפוגה; אשרו אותה באתר והיא תהפוך להזמנה במחירים שסוכמו. הצעות מחיר מתאימות להקצאות חודשיות, פריסה בכמה אתרים ורכישות בהיקף של מכולות.</p>
+      <h2>מחירי חוזה</h2>
+      <p>קונים קבועים יכולים לקבל מחירי יחידה חוזיים למוצרים מסוימים. החשבון שלכם תמיד משתמש במחיר הטוב מבין מחיר החוזה ומחיר מדרגת הכמות שפורסם.</p>
+      <h2>מטבעות ותשלום</h2>
+      <p>המחירים מנוהלים בדולר ואפשר להציג אותם ולקבל חשבונית בדולר, אירו או שקל, לפי שערי חליפין שמחלקת הכספים רושמת. התשלום ב-PayPal (בכפוף למגבלות ולזכאות של חשבון PayPal) או בהעברה בנקאית לפי חשבון עסקה. הזמנות מסומנות כמשולמות רק לאחר אימות התשלום.</p>
+      <h2>לוגיסטיקה</h2>
+      <p>בחרו בהובלה מבוטחת שאנו מארגנים — שמתומחרת לאחר בדיקת ההזמנה — או באיסוף על ידי משלח מטעמכם. הערכות זמני אספקה הן זמניות עד לאישור בכתב. משלוחים, אסמכתאות ומספרי מעקב מופיעים בחשבון שלכם ברגע שהם נוצרים.</p>
+      <h2>מסמכי יצוא</h2>
+      <p>בתשלום נאספים תנאי Incoterms, היבואן והיצואן הרשומים, ומספרי המס של הנמען כשרלוונטי. חלק מהמוצרים, כמו ציוד תקשורת עם הצפנה, מחייבים בדיקת פיקוח על יצוא לפני המשלוח.</p>
+      <p><Link className="link" href="/quote">בקשת הצעת מחיר</Link></p>
+    </ContentPage>
+  );
   return (
     <ContentPage title="Wholesale services" intro="Online ordering for standard volumes, formal quotations for programmes, and a reviewed path from order to dispatch.">
       <h2>Online trade ordering</h2>

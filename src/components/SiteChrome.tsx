@@ -4,52 +4,61 @@ import { currentActor } from "@/server/http";
 import { cartCount } from "@/server/cart";
 import { companyInfo } from "@/lib/company";
 import { DEPARTMENTS } from "@/lib/catalog-meta";
+import { departmentText } from "@/lib/labels";
+import { getT } from "@/server/locale";
+import type { T } from "@/lib/i18n";
+import { LanguageSwitch } from "./client/LanguageSwitch";
 
-const NAV = [
-  { href: "/catalog", label: "Catalog" },
-  { href: "/categories", label: "Categories" },
-  { href: "/services", label: "Wholesale services" },
-  { href: "/quote", label: "Request a quote" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+const nav = (t: T) => [
+  { href: "/catalog", label: t("Catalog", "קטלוג") },
+  { href: "/categories", label: t("Categories", "קטגוריות") },
+  { href: "/services", label: t("Wholesale services", "שירותי סיטונאות") },
+  { href: "/quote", label: t("Request a quote", "בקשת הצעת מחיר") },
+  { href: "/about", label: t("About", "אודות") },
+  { href: "/contact", label: t("Contact", "צור קשר") },
 ];
 
 export async function SiteHeader() {
+  const { t } = await getT();
+  const NAV = nav(t);
   const actor = await currentActor();
   const count = actor && !actor.isStaff && actor.companyStatus === "APPROVED" ? await cartCount(actor.userId) : 0;
   return (
     <header className="border-b border-line bg-white">
       <div className="bg-deep text-[13px] text-deep-100">
         <div className="container-page flex h-9 items-center justify-between gap-4">
-          <p className="truncate">Trade accounts only — wholesale pricing is shown to verified business buyers.</p>
-          {!actor && <Link href="/register" className="hidden shrink-0 font-semibold text-tag hover:underline sm:block">Open a trade account</Link>}
+          <p className="truncate">{t("Trade accounts only — wholesale pricing is shown to verified business buyers.", "לחשבונות עסקיים בלבד — מחירי סיטונאות מוצגים לקונים עסקיים מאומתים.")}</p>
+          <div className="flex shrink-0 items-center gap-4">
+            {!actor && <Link href="/register" className="hidden font-semibold text-tag hover:underline sm:block">{t("Open a trade account", "פתיחת חשבון עסקי")}</Link>}
+            <LanguageSwitch className="inline-flex min-h-6 items-center font-semibold text-white underline-offset-2 hover:underline" />
+          </div>
         </div>
       </div>
       <div className="container-page flex h-16 items-center justify-between gap-3 sm:gap-6">
-        <Logo />
-        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+        <Logo label={t("Valden — home", "Valden — דף הבית")} />
+        <nav aria-label={t("Main", "ראשי")} className="hidden items-center gap-1 lg:flex">
           {NAV.map((n) => <Link key={n.href} href={n.href} className="rounded px-3 py-2 text-sm font-medium text-steel-600 hover:bg-paper hover:text-deep">{n.label}</Link>)}
         </nav>
         <div className="flex items-center gap-1.5 sm:gap-2">
           {!actor && (<>
-            <Link href="/login" className="btn-ghost btn-sm hidden sm:inline-flex">Sign in</Link>
-            <Link href="/register" className="btn-primary btn-sm">Register business</Link>
+            <Link href="/login" className="btn-ghost btn-sm hidden sm:inline-flex">{t("Sign in", "כניסה")}</Link>
+            <Link href="/register" className="btn-primary btn-sm">{t("Register business", "רישום עסק")}</Link>
           </>)}
-          {actor?.isStaff && <Link href="/admin" className="btn-deep btn-sm">Admin</Link>}
+          {actor?.isStaff && <Link href="/admin" className="btn-deep btn-sm">{t("Admin", "ניהול")}</Link>}
           {actor && !actor.isStaff && (<>
             {actor.companyStatus === "APPROVED" && (
-              <Link href="/portal/cart" className="btn-outline btn-sm" aria-label={`Cart, ${count} lines`}>
-                <span className="hidden sm:inline">Cart</span><span className="sm:hidden" aria-hidden>Cart</span> <span className="num rounded-sm bg-deep px-1.5 text-xs text-white">{count}</span>
+              <Link href="/portal/cart" className="btn-outline btn-sm" aria-label={t(`Cart, ${count} lines`, `סל, ${count} שורות`)}>
+                <span aria-hidden>{t("Cart", "סל")}</span> <span aria-hidden className="num rounded-sm bg-deep px-1.5 text-xs text-white">{count}</span>
               </Link>
             )}
-            <Link href="/portal" className="btn-deep btn-sm hidden sm:inline-flex">My account</Link>
+            <Link href="/portal" className="btn-deep btn-sm hidden sm:inline-flex">{t("My account", "החשבון שלי")}</Link>
           </>)}
           <details className="relative lg:hidden">
-            <summary className="btn-ghost btn-sm cursor-pointer list-none px-2" aria-label="Menu">Menu</summary>
-            <div className="absolute right-0 z-30 mt-2 w-60 rounded-md border border-line bg-white p-2 shadow-lg">
+            <summary className="btn-ghost btn-sm cursor-pointer list-none px-2">{t("Menu", "תפריט")}</summary>
+            <div className="absolute end-0 z-30 mt-2 w-60 rounded-md border border-line bg-white p-2 shadow-lg">
               {NAV.map((n) => <Link key={n.href} href={n.href} className="block rounded px-3 py-2 text-sm hover:bg-paper">{n.label}</Link>)}
-              {!actor && <Link href="/login" className="block rounded px-3 py-2 text-sm hover:bg-paper">Sign in</Link>}
-              {actor && !actor.isStaff && <Link href="/portal" className="block rounded px-3 py-2 text-sm font-semibold hover:bg-paper">My account</Link>}
+              {!actor && <Link href="/login" className="block rounded px-3 py-2 text-sm hover:bg-paper">{t("Sign in", "כניסה")}</Link>}
+              {actor && !actor.isStaff && <Link href="/portal" className="block rounded px-3 py-2 text-sm font-semibold hover:bg-paper">{t("My account", "החשבון שלי")}</Link>}
             </div>
           </details>
         </div>
@@ -58,14 +67,15 @@ export async function SiteHeader() {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { l, t } = await getT();
   const c = companyInfo();
   return (
     <footer className="mt-24 bg-deep-900 text-deep-100">
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <Logo inverted />
-          <p className="mt-4 max-w-xs text-sm text-deep-200">Wholesale electronics for registered businesses. Every account is verified before pricing and ordering are enabled.</p>
+          <Logo inverted label={t("Valden — home", "Valden — דף הבית")} />
+          <p className="mt-4 max-w-xs text-sm text-deep-200">{t("Wholesale electronics for registered businesses. Every account is verified before pricing and ordering are enabled.", "אלקטרוניקה בסיטונאות לעסקים רשומים. כל חשבון נבדק לפני שמחירים והזמנות נפתחים.")}</p>
           <div className="mt-5 space-y-1 text-sm">
             {c.legalName && <p className="text-white">{c.legalName}</p>}
             {c.address && <p>{c.address}</p>}
@@ -73,13 +83,13 @@ export function SiteFooter() {
             {c.phone && <p>{c.phone}</p>}
           </div>
         </div>
-        <FooterCol title="Departments" links={DEPARTMENTS.map((x) => [`/catalog?dept=${x.slug}`, x.name])} />
-        <FooterCol title="Trade" links={[["/register", "Register a business"], ["/login", "Sign in"], ["/quote", "Request a quote"], ["/services", "Wholesale services"], ["/faq", "FAQ"], ["/contact", "Contact the trade desk"]]} />
-        <FooterCol title="Policies" links={[["/policies/shipping", "Shipping policy"], ["/policies/returns", "Returns & refunds"], ["/terms", "Terms of trade"], ["/privacy", "Privacy policy"], ["/accessibility", "Accessibility statement"], ["/about", "About Valden"]]} />
+        <FooterCol title={t("Departments", "מחלקות")} links={DEPARTMENTS.map((x) => [`/catalog?dept=${x.slug}`, departmentText(x, l).name])} />
+        <FooterCol title={t("Trade", "סחר")} links={[["/register", t("Register a business", "רישום עסק")], ["/login", t("Sign in", "כניסה")], ["/quote", t("Request a quote", "בקשת הצעת מחיר")], ["/services", t("Wholesale services", "שירותי סיטונאות")], ["/faq", t("FAQ", "שאלות נפוצות")], ["/contact", t("Contact the trade desk", "פנייה לצוות המכירות")]]} />
+        <FooterCol title={t("Policies", "מדיניות")} links={[["/policies/shipping", t("Shipping policy", "מדיניות משלוחים")], ["/policies/returns", t("Returns & refunds", "החזרות והחזרים כספיים")], ["/terms", t("Terms of trade", "תנאי סחר")], ["/privacy", t("Privacy policy", "מדיניות פרטיות")], ["/accessibility", t("Accessibility statement", "הצהרת נגישות")], ["/about", t("About Valden", "אודות Valden")]]} />
       </div>
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-deep-200 sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} {c.legalName ?? "Valden"}. Product names and trademarks belong to their respective owners; their use does not imply endorsement or an authorised-distributor relationship.</p>
+          <p>© {new Date().getFullYear()} {c.legalName ?? "Valden"}. {t("Product names and trademarks belong to their respective owners; their use does not imply endorsement or an authorised-distributor relationship.", "שמות המוצרים והסימנים המסחריים שייכים לבעליהם; השימוש בהם אינו מעיד על המלצה או על מעמד של מפיץ מורשה.")}</p>
         </div>
       </div>
     </footer>

@@ -14,7 +14,7 @@ export default {
         bad: { DEFAULT: "#B3261E", soft: "#F9E3E1" },
         info: { DEFAULT: "#1B4479", soft: "#E6EDF7" },
       },
-      fontFamily: { sans: ['"Archivo Variable"', "system-ui", "sans-serif"] },
+      fontFamily: { sans: ['"Archivo Variable"', '"Heebo Variable"', "system-ui", "sans-serif"] },
       maxWidth: { page: "78rem" },
       borderRadius: { DEFAULT: "4px" },
     },

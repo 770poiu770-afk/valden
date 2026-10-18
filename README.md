@@ -113,5 +113,16 @@ Fully implemented and covered by automated tests:
   Postgres-backed rate limiting, CSRF origin checks, security headers (CSP, frame denial, HSTS),
   email outbox with optional SMTP delivery.
 
+## Languages
+
+The customer-facing site (public pages, buyer portal, checkout, order documents) is available in
+**English** and **Hebrew** (right-to-left). Visitors switch with the language link in the top bar; the
+choice is stored in the `vld_lang` cookie, and first-time visitors whose browser prefers Hebrew get
+Hebrew automatically. Strings are written inline as `t("English", "עברית")` (`src/lib/i18n.ts`,
+`src/server/locale.ts`); Hebrew labels for statuses, categories and departments are in
+`src/lib/labels.ts`; buyer-facing server messages are translated in `src/lib/messages-he.ts`.
+Not translated: product data (names, specifications, descriptions), transactional emails, and the
+staff admin portal (English-only, always left-to-right).
+
 Railway deployment: `docs/RAILWAY.md`. See `docs/LAUNCH_CHECKLIST.md` for what must happen before going live and the list of external
 dependencies.

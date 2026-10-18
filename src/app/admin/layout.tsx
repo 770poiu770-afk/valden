@@ -3,6 +3,7 @@ import { Logo } from "@/components/Brand";
 import { requireStaff } from "@/server/guards";
 import { LogoutButton } from "@/components/client/LogoutButton";
 import type { Permission } from "@/lib/rbac";
+import { LocaleProvider } from "@/components/client/LocaleProvider";
 
 const NAV: { group: string; items: [string, string, Permission][] }[] = [
   { group: "Overview", items: [["/admin", "Dashboard", "admin.access"]] },
@@ -17,7 +18,9 @@ const NAV: { group: string; items: [string, string, Permission][] }[] = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const a = await requireStaff();
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
+    // The staff portal is English-only and always left-to-right, whatever language the visitor chose.
+    <LocaleProvider locale="en">
+    <div dir="ltr" lang="en" className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
       <aside className="border-b border-white/10 bg-deep-900 text-deep-100 lg:min-h-screen lg:border-b-0">
         <div className="flex items-center justify-between px-5 py-4"><Logo inverted href="/admin" /><span className="rounded-sm bg-tag px-1.5 py-0.5 text-[11px] font-bold text-deep-900">Admin</span></div>
         <nav aria-label="Admin" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:block lg:space-y-4 lg:pb-6">
@@ -39,5 +42,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
       <main id="main" className="min-w-0 px-4 py-8 sm:px-8">{children}</main>
     </div>
+    </LocaleProvider>
   );
 }

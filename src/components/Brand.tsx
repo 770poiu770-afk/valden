@@ -13,9 +13,9 @@ export function Mark({ size = 28, inverted = false }: { size?: number; inverted?
   );
 }
 
-export function Logo({ inverted = false, href = "/" }: { inverted?: boolean; href?: string }) {
+export function Logo({ inverted = false, href = "/", label = "Valden — home" }: { inverted?: boolean; href?: string; label?: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2.5" aria-label="Valden — home">
+    <Link href={href} className="flex items-center gap-2.5" aria-label={label}>
       <Mark inverted={inverted} />
       <span className={`max-[359px]:sr-only text-[16px] sm:text-[19px] leading-none ${inverted ? "text-white" : "text-deep"}`} style={{ fontStretch: "125%", fontWeight: 800, letterSpacing: "0.04em" }}>
         VALDEN

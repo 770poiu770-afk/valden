@@ -5,12 +5,14 @@ import { requireApprovedBuyer } from "@/server/guards";
 import { getCartItems, getOrCreateCart } from "@/server/cart";
 import { QuoteBuilder } from "@/components/client/Builders";
 import { PageHeader } from "@/components/ui";
+import { getT } from "@/server/locale";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "New quote request" };
+export async function generateMetadata() { const { t } = await getT(); return { title: t("New quote request", "בקשה חדשה להצעת מחיר") }; }
 
 export default async function NewQuote({ searchParams }: { searchParams: Promise<{ sku?: string; qty?: string; fromCart?: string; bulk?: string; currency?: string }> }) {
   const actor = await requireApprovedBuyer();
   const sp = await searchParams;
+  const { t } = await getT();
   const wanted = new Map<string, number>();
   if (sp.sku) wanted.set(sp.sku.toUpperCase(), Math.max(1, Number(sp.qty) || 1));
   if (sp.bulk) for (const part of sp.bulk.split(",").slice(0, 300)) { const [s, q] = part.split(":"); if (s) wanted.set(s.toUpperCase(), (wanted.get(s.toUpperCase()) ?? 0) + Math.max(1, Number(q) || 1)); }
@@ -24,7 +26,7 @@ export default async function NewQuote({ searchParams }: { searchParams: Promise
   ];
   return (
     <div>
-      <PageHeader title="New quote request" back={{ href: "/portal/quotes", label: "Quotes & offers" }} intro="List the products and quantities you need. Target prices help our trade desk respond faster. You will receive a formal offer with an expiry date." />
+      <PageHeader title={t("New quote request", "בקשה חדשה להצעת מחיר")} back={{ href: "/portal/quotes", label: t("Quotes & offers", "הצעות מחיר") }} intro={t("List the products and quantities you need. Target prices help our trade desk respond faster. You will receive a formal offer with an expiry date.", "פרטו את המוצרים והכמויות שאתם צריכים. מחירי יעד עוזרים לצוות המכירות להשיב מהר יותר. תקבלו הצעה רשמית עם תאריך תפוגה.")} />
       <QuoteBuilder initial={initial} currency={["USD", "EUR", "ILS"].includes(sp.currency ?? "") ? sp.currency! : "USD"} />
     </div>
   );

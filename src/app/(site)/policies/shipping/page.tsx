@@ -1,6 +1,24 @@
 import { ContentPage } from "@/components/ContentPage";
-export const metadata = { title: "Shipping policy" };
-export default function Shipping() {
+import { getT } from "@/server/locale";
+export async function generateMetadata() { const { t } = await getT(); return { title: t("Shipping policy", "מדיניות משלוחים") }; }
+export default async function Shipping() {
+  const { l } = await getT();
+  if (l === "he") return (
+    <ContentPage title="מדיניות משלוחים" legal>
+      <h2>אפשרויות משלוח</h2>
+      <p>בתשלום בוחרים בין הובלה מבוטחת שמארגנת Valden לבין איסוף על ידי משלח מטעמכם. דמי הובלה, ביטוח וטיפול במשלוחים שמארגנת Valden נמסרים לאחר בדיקת ההזמנה ומתווספים להזמנה לפני בקשת התשלום.</p>
+      <h2>הערכות זמני אספקה</h2>
+      <p>כל מועד אספקה או זמן מעבר שאנו מוסרים הוא הערכה, אלא אם אישרנו אותו בכתב. בחשבון שלכם ההערכות מסומנות כזמניות עד לאישורן.</p>
+      <h2>משלוחים חלקיים</h2>
+      <p>הזמנה עשויה להישלח בכמה משלוחים. כל משלוח מופיע בחשבון עם אסמכתא, תכולה, ובמידת האפשר חברת השילוח ומספר מעקב.</p>
+      <h2>טובין מוגבלים</h2>
+      <p>מוצרים עם סוללות ליתיום נשלחים לפי כללי חומרים מסוכנים. חלק מציוד התקשורת והאבטחה מחייב בדיקת פיקוח על יצוא, וייתכן שלא ניתן לשלוח אותו לכל יעד.</p>
+      <h2>מכס ומיסים</h2>
+      <p>אלא אם נקבע אחרת בתנאי ה-Incoterm שסוכמו, מכס, מיסי יבוא ושחרור מהמכס ביעד באחריות הקונה.</p>
+      <h2>בדיקה בעת קבלה</h2>
+      <p>בדקו את המשלוח בעת ההגעה ורשמו כל נזק נראה לעין או חוסר במסמכי המוביל. דווחו על פערים לצוות המכירות בהקדם, עם תמונות ואסמכתת המשלוח.</p>
+    </ContentPage>
+  );
   return (
     <ContentPage title="Shipping policy" legal>
       <h2>Shipping options</h2>

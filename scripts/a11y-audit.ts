@@ -10,12 +10,15 @@
  *   - horizontal overflow at 320 CSS px (equivalent to 400% zoom reflow, WCAG 1.4.10)
  *   - text-spacing / 200% text resize: no clipped overflow after enlarging root font size
  *   - keyboard: the first 25 Tab stops all show a visible focus indicator and none are hidden
+ *   - --lang he runs everything in Hebrew (right-to-left)
  */
 import { chromium, type Page, type BrowserContext } from "playwright-core";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
+const langIdx = process.argv.indexOf("--lang");
+const LANG = langIdx > -1 ? process.argv[langIdx + 1] : "en";
 const shotsIdx = process.argv.indexOf("--shots");
 const SHOTS = shotsIdx > -1 ? process.argv[shotsIdx + 1] : null;
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
@@ -26,9 +29,9 @@ const findings: Finding[] = [];
 async function login(ctx: BrowserContext, email: string, password: string) {
   const p = await ctx.newPage();
   await p.goto(`${BASE}/login`);
-  await p.getByLabel("Email").fill(email);
-  await p.getByLabel("Password", { exact: true }).fill(password);
-  await p.getByRole("button", { name: /sign in/i }).click();
+  await p.locator("#email").fill(email);
+  await p.locator("#password").fill(password);
+  await p.locator("form button[type=submit]").click();
   await p.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 20000 });
   await p.close();
 }
@@ -88,6 +91,7 @@ async function run() {
     if (role !== "guest" && !process.env[`${role.toUpperCase()}_EMAIL`]) continue;
     for (const [vp, size] of [["desktop", { width: 1280, height: 900 }], ["mobile", { width: 320, height: 720 }]] as const) {
       const ctx = await browser.newContext({ viewport: size, deviceScaleFactor: 1 });
+      await ctx.addCookies([{ name: "vld_lang", value: LANG, url: BASE }]);
       await auth(ctx);
       const page = await ctx.newPage();
       for (const p of pages) { try { await checkPage(page, p, `${vp}-${role}`); } catch (e) { findings.push({ page: p, viewport: vp, kind: "error", detail: (e as Error).message.slice(0, 200) }); } }

@@ -4,6 +4,9 @@ import { ZodError, type ZodTypeAny, type z } from "zod";
 import { AppError, forbidden } from "@/lib/errors";
 import { actorFromToken, SESSION_COOKIE, type Actor } from "@/lib/auth";
 import { log } from "@/lib/log";
+import { trMessage } from "@/lib/messages-he";
+import type { Locale } from "@/lib/i18n";
+import { getLocale } from "./locale";
 
 export async function currentActor(): Promise<Actor | null> {
   const c = await cookies();
@@ -57,17 +60,21 @@ type Ctx<P> = { req: NextRequest; params: P; actor: Actor | null };
 /** Wrap a route handler: same-origin check, actor resolution, uniform error JSON. */
 export function route<P = Record<string, string>>(fn: (ctx: Ctx<P>) => Promise<unknown>, opts: { csrf?: boolean } = {}) {
   return async (req: NextRequest, context: { params: Promise<P> }) => {
+    let actor: Actor | null = null;
+    // Staff use the English-only admin; buyers get messages in their chosen language.
+    const lang = async (): Promise<Locale> => (actor?.isStaff ? "en" : await getLocale().catch(() => "en" as Locale));
     try {
       if (opts.csrf !== false) assertSameOrigin(req);
-      const actor = await currentActor();
+      actor = await currentActor();
       const params = (await context?.params) ?? ({} as P);
       const result = await fn({ req, params, actor });
       if (isNativeFormPost(req)) return await nativeSuccess(req, result);
       if (result instanceof Response) return result;
-      return NextResponse.json(jsonSafe(result ?? { ok: true }));
+      return NextResponse.json(jsonSafe(translateResult(result ?? { ok: true }, await lang())));
     } catch (e) {
-      if (isNativeFormPost(req)) return nativeError(req, e);
-      return errorResponse(e);
+      const l = await lang();
+      if (isNativeFormPost(req)) return nativeError(req, e, l);
+      return errorResponse(e, l);
     }
   };
 }
@@ -100,25 +107,37 @@ async function nativeSuccess(req: NextRequest, result: unknown) {
   for (const c of cookies) res.headers.append("set-cookie", c);
   return res;
 }
-function nativeError(req: NextRequest, e: unknown) {
-  const msg = e instanceof AppError ? e.message : e instanceof ZodError ? "Please check the form and try again." : "Something went wrong. Please try again.";
+function nativeError(req: NextRequest, e: unknown, l: Locale = "en") {
+  const msg = e instanceof AppError ? trMessage(e.message, l) ?? e.message : e instanceof ZodError ? (l === "he" ? "בדקו את הטופס ונסו שוב." : "Please check the form and try again.") : (l === "he" ? "משהו השתבש. נסו שוב." : "Something went wrong. Please try again.");
   if (!(e instanceof AppError) && !(e instanceof ZodError)) log.error("unhandled_route_error", { message: (e as Error)?.message });
   const u = new URL(backTo(req), publicBase(req));
   u.searchParams.set("error", msg.slice(0, 200));
   return NextResponse.redirect(u, 303);
 }
 
-export function errorResponse(e: unknown) {
+export function errorResponse(e: unknown, l: Locale = "en") {
+  const tr = (m: string) => trMessage(m, l) ?? m;
   if (e instanceof ZodError) {
     const fields: Record<string, string> = {};
     for (const i of e.issues) fields[i.path.join(".") || "_"] ??= i.message;
     const first = e.issues[0];
-    return NextResponse.json({ error: first ? `${first.path.join(".") ? first.path.join(".") + ": " : ""}${first.message}` : "Invalid input.", fields }, { status: 400 });
+    return NextResponse.json({ error: tr(first ? `${first.path.join(".") ? first.path.join(".") + ": " : ""}${first.message}` : "Invalid input."), fields }, { status: 400 });
   }
-  if (e instanceof AppError) return NextResponse.json({ error: e.message, code: e.code, details: e.details ?? undefined }, { status: e.status });
-  if (e instanceof SyntaxError) return NextResponse.json({ error: "Malformed request body." }, { status: 400 });
+  if (e instanceof AppError) return NextResponse.json({ error: tr(e.message), code: e.code, details: translateDetails(e.details, l) ?? undefined }, { status: e.status });
+  if (e instanceof SyntaxError) return NextResponse.json({ error: tr("Malformed request body.") }, { status: 400 });
   log.error("unhandled_route_error", { message: (e as Error)?.message, stack: (e as Error)?.stack?.split("\n").slice(0, 4).join(" | ") });
-  return NextResponse.json({ error: "Something went wrong. Our team has been notified." }, { status: 500 });
+  return NextResponse.json({ error: tr("Something went wrong. Our team has been notified.") }, { status: 500 });
+}
+
+function translateDetails(d: unknown, l: Locale) {
+  return Array.isArray(d) ? d.map((x) => (typeof x === "string" ? trMessage(x, l) ?? x : x)) : d;
+}
+function translateResult(r: unknown, l: Locale) {
+  if (l === "en" || !r || typeof r !== "object" || Array.isArray(r)) return r;
+  const o = { ...(r as Record<string, unknown>) };
+  if (typeof o.message === "string") o.message = trMessage(o.message, l);
+  if (o.details) o.details = translateDetails(o.details, l);
+  return o;
 }
 
 export function jsonSafe<T>(v: T): T {

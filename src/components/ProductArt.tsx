@@ -287,7 +287,7 @@ const ALIASES: Record<string, Kind> = {
 /** `decorative` hides the drawing from assistive tech (use inside a link that already names the item). */
 export function ProductArt({ kind, className = "", label, decorative = false }: { kind: string; className?: string; label?: string; decorative?: boolean }) {
   const k: Kind = (kind in SHAPES ? kind : ALIASES[kind] ?? "generic") as Kind;
-  const a11y = decorative ? { "aria-hidden": true, focusable: "false" as const } : { role: "img", "aria-label": label ?? "Product illustration (no photo available)" };
+  const a11y = decorative ? { "aria-hidden": true, focusable: "false" as const } : { role: "img", "aria-label": label ?? "Product illustration" };
   return (
     <svg viewBox="0 0 240 180" className={className} style={{ background: "#EEF3F9" }} {...a11y}>
       <rect width="240" height="180" fill="#EEF3F9" />

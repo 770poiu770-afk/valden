@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
+import { intlTag, type Locale } from "@/lib/i18n";
+import { statusLabel } from "@/lib/labels";
 
 export function Money({ cents, currency, className = "" }: { cents: bigint | number | string | null | undefined; currency: string; className?: string }) {
   if (cents === null || cents === undefined) return <span className={className}>—</span>;
@@ -27,8 +29,8 @@ const STATUS_TONE: Record<string, Tone> = {
   PREPARING: "warn", READY: "info", IN_TRANSIT: "info", EXCEPTION: "bad", ACCEPTED_DOC: "ok",
   NONE: "ok", NEEDS_REVIEW: "bad", FALLBACK_POLICY: "warn", OVERRIDE: "info", QUEUED: "muted",
 };
-export function StatusPill({ status, label }: { status: string; label?: string }) {
-  const text = label ?? status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, " ");
+export function StatusPill({ status, label, l = "en" }: { status: string; label?: string; l?: Locale }) {
+  const text = label ?? statusLabel(status, l);
   return <Badge tone={STATUS_TONE[status] ?? "muted"}>{text}</Badge>;
 }
 
@@ -36,7 +38,7 @@ export function PageHeader({ title, intro, actions, back }: { title: string; int
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        {back && <Link href={back.href} className="mb-2 inline-block text-sm text-steel-500 hover:text-deep">‹ {back.label}</Link>}
+        {back && <Link href={back.href} className="mb-2 inline-block text-sm text-steel-500 hover:text-deep"><span aria-hidden className="inline-block rtl:-scale-x-100">‹</span> {back.label}</Link>}
         <h1 className="wide text-2xl sm:text-[28px]">{title}</h1>
         {intro && <div className="mt-1.5 max-w-[70ch] text-steel-500">{intro}</div>}
       </div>
@@ -93,5 +95,5 @@ export function Stat({ label, value, sub }: { label: string; value: ReactNode; s
   );
 }
 
-export const fmtDate = (d: Date | string | null | undefined, withTime = false) =>
-  d ? new Date(d).toLocaleString("en-GB", withTime ? { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" } : { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }) + (withTime ? " UTC" : "") : "—";
+export const fmtDate = (d: Date | string | null | undefined, withTime = false, l: Locale = "en") =>
+  d ? new Date(d).toLocaleString(intlTag(l), withTime ? { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" } : { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }) + (withTime ? " UTC" : "") : "—";

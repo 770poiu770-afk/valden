@@ -15,12 +15,15 @@
   /* Wide-set stencil headings — the brand's typographic signature */
   .display { font-stretch: 125%; font-weight: 800; letter-spacing: -0.01em; line-height: 1.02; }
   .wide { font-stretch: 115%; font-weight: 700; letter-spacing: 0; }
-  .num { font-variant-numeric: tabular-nums lining-nums; }
+  .num { font-variant-numeric: tabular-nums lining-nums; unicode-bidi: isolate; }
+  /* Right-to-left: keep codes, emails and numbers readable inside Hebrew text */
+  [dir="rtl"] input[type="email"], [dir="rtl"] input[type="tel"], [dir="rtl"] input[type="url"], [dir="rtl"] input[type="number"], [dir="rtl"] input[inputmode="numeric"], [dir="rtl"] input[inputmode="decimal"] { direction: ltr; text-align: right; }
+  [dir="rtl"] .display, [dir="rtl"] .wide { letter-spacing: 0; }
   .container-page { @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8; }
   .prose-body p { @apply mb-4 max-w-[68ch]; }
   .prose-body h2 { @apply wide mt-10 mb-3 text-xl; }
   .prose-body h3 { @apply mt-6 mb-2 font-semibold text-deep-900; }
-  .prose-body ul { @apply mb-4 ml-5 list-disc max-w-[68ch] space-y-1; }
+  .prose-body ul { @apply mb-4 ms-5 list-disc max-w-[68ch] space-y-1; }
 
   .btn { @apply inline-flex items-center justify-center gap-2 rounded px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
   .btn-primary { @apply btn bg-tag text-deep-900 hover:bg-tag-dark; }
