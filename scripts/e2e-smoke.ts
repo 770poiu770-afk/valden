@@ -101,9 +101,19 @@ async function main() {
   const v = sku.results[0];
   const one = await personal.json("/api/cart", { method: "POST", json: { mode: "set", lines: [{ variantId: v.variantId, quantity: 1 }] } });
   check("add 1 unit to cart", one.status === 200, JSON.stringify(one.data));
-  const oneOrder = await personal.json("/api/orders", { method: "POST", json: { currency: "ILS", shippingMethod: "VALDEN_FREIGHT", paymentMethod: "MANUAL_TRANSFER", billingSameAsShipping: true,
+  const oneOrder = await personal.json("/api/orders", { method: "POST", json: { currency: "ILS", shippingMethod: "STANDARD_DELIVERY", paymentMethod: "PAYPAL", billingSameAsShipping: true,
+    totalCents: "1", status: "PAID", paymentStatus: "PAID", // tampered fields — must be ignored
     newShipping: { label: "Home", contactName: "Pat Shopper", line1: "2 Test St", city: "Haifa", countryCode: "IL" } } });
-  check("personal customer orders a single unit", oneOrder.status === 200, JSON.stringify(oneOrder.data));
+  check("personal customer orders a single unit (standard delivery, PayPal)", oneOrder.status === 200, JSON.stringify(oneOrder.data));
+  const oneId = String(oneOrder.data.orderId);
+  const oneHtml = await (await personal.req(`/portal/orders/${oneId}`)).text();
+  check("pay-now order is awaiting payment, not paid", oneHtml.includes("Payment due") && !/>Paid</.test(oneHtml));
+  const ppStart = await personal.json(`/api/orders/${oneId}/paypal`, { method: "POST", json: {} });
+  check("PayPal start is server-side (503 until credentials are set, else 200)", ppStart.status === 200 || (ppStart.status === 503 && ppStart.data.code === "PAYPAL_NOT_CONFIGURED"), JSON.stringify(ppStart.data));
+  const fakeCap = await personal.json(`/api/orders/${oneId}/paypal/capture`, { method: "POST", json: { paypalOrderId: "FAKE-FROM-BROWSER" } });
+  check("browser cannot capture a malformed PayPal order id (400)", fakeCap.status === 400, JSON.stringify(fakeCap.data));
+  const fakeCap2 = await personal.json(`/api/orders/${oneId}/paypal/capture`, { method: "POST", json: { paypalOrderId: "5O190127TN364715T" } });
+  check("browser cannot capture an unknown PayPal order (404)", fakeCap2.status === 404, JSON.stringify(fakeCap2.data));
 
   // ---- business customer: bulk order with volume pricing
   const add = await buyer.json("/api/cart", { method: "POST", json: { mode: "set", lines: [{ variantId: v.variantId, quantity: 45 }] } });

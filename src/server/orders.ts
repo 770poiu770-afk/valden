@@ -66,6 +66,11 @@ export function taxRateFor(country: string, s: AppSettings) {
   return s.taxRules.byCountry[country] ?? s.taxRules.defaultRateBps;
 }
 
+/** Flat delivery charge (USD minor) for methods that are not quoted by staff; null otherwise. */
+export function flatRateBase(m: AppSettings["shippingMethods"][number]): bigint | null {
+  return !m.quotedByStaff && m.flatRateBaseMinor ? BigInt(m.flatRateBaseMinor) : null;
+}
+
 export function paypalCapExceeded(totalCents: bigint, fxRate: string, s: AppSettings) {
   if (s.payments.paypalMaxOrderBaseMinor <= 0) return false;
   const base = convertMinorInverse(totalCents, fxRate);
@@ -112,7 +117,9 @@ async function insertOrder(tx: Tx, a: CreateArgs) {
   const needsConfirmation = !a.staffConfirmed && (s.orderRules.requireOrderConfirmation || method.quotedByStaff);
   const pendingReview = reasons.length > 0 || needsConfirmation;
 
-  const shippingCents = a.shippingBaseCents ? convertMinor(a.shippingBaseCents, priced.rate.rate) : 0n;
+  // Freight: staff-set amount (quotes, confirmations) or the method's flat rate. Always computed here, never taken from the browser.
+  const shippingBase = a.shippingBaseCents ?? flatRateBase(method);
+  const shippingCents = shippingBase ? convertMinor(shippingBase, priced.rate.rate) : 0n;
   const taxRateBps = taxRateFor(ship.countryCode, s);
   const taxCents = percentOfBps(priced.subtotalCents + shippingCents, taxRateBps);
   const totalCents = priced.subtotalCents + shippingCents + taxCents;

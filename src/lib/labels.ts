@@ -64,6 +64,7 @@ export function departmentText(d: { slug: string; name: string; description: str
 
 /** Hebrew for the default shipping methods and bank-transfer text; staff-customised text is shown as entered. */
 const SHIPPING_HE: Record<string, { en: string; name: string; description: string }> = {
+  STANDARD_DELIVERY: { en: "Standard delivery", name: "משלוח רגיל", description: "משלוח עד הבית או העסק. מחיר קבוע שמוצג לפני התשלום." },
   VALDEN_FREIGHT: { en: "Insured freight arranged by Valden", name: "הובלה מבוטחת שמארגנת Valden", description: "דמי ההובלה, הביטוח והטיפול נמסרים על ידי מחלקת הלוגיסטיקה לאחר בדיקת ההזמנה." },
   BUYER_FORWARDER: { en: "Buyer's own forwarder (collection)", name: "משלח מטעם הקונה (איסוף)", description: "המשלח מטעמכם אוסף מנקודת המשלוח שסוכמה. ללא דמי הובלה מ-Valden." },
 };

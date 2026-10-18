@@ -39,6 +39,8 @@ export const SettingsSchema = z.object({
   }),
   shippingMethods: z.array(z.object({
     code: z.string().min(2), name: z.string().min(2), description: z.string(), quotedByStaff: z.boolean(),
+    /** Fixed delivery charge in USD minor units (converted to the order currency). Used only when quotedByStaff is false. */
+    flatRateBaseMinor: z.number().int().nonnegative().optional(),
   })).min(1),
   quoteDefaults: z.object({ offerValidityDays: z.number().int().min(1).max(90) }),
 });
@@ -65,10 +67,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     note: "Indicative configuration only. Confirm VAT/sales-tax treatment for each jurisdiction with your accountant before launch.",
   },
   orderRules: {
-    requireOrderConfirmation: true,
-    riskReviewThresholdBaseMinor: 5_000_000, // US$50,000
-    newCompanyReviewDays: 30,
-    reviewFirstOrder: true,
+    requireOrderConfirmation: false, // open store: flat-rate orders can be paid immediately; staff-quoted freight still goes to review
+    riskReviewThresholdBaseMinor: 5_000_000, // US$50,000 — larger orders are still reviewed before payment
+    newCompanyReviewDays: 0,
+    reviewFirstOrder: false,
     enforceMoq: false,
   },
   payments: {
@@ -78,6 +80,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     manualTransferInstructions: "Bank transfer details are issued by our finance team on a pro-forma invoice once the order is confirmed. Payment is only recorded after funds are verified as received.",
   },
   shippingMethods: [
+    { code: "STANDARD_DELIVERY", name: "Standard delivery", description: "Courier delivery to your address. Flat rate, shown before you pay.", quotedByStaff: false, flatRateBaseMinor: 1_000 }, // US$10 — change in Admin › Settings
     { code: "VALDEN_FREIGHT", name: "Insured freight arranged by Valden", description: "Freight, insurance and handling are quoted by our logistics desk after order review.", quotedByStaff: true },
     { code: "BUYER_FORWARDER", name: "Buyer's own forwarder (collection)", description: "Your appointed forwarder collects from the agreed dispatch point. No freight charge from Valden.", quotedByStaff: false },
   ],

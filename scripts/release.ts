@@ -17,6 +17,7 @@ import { bootstrapReferenceData } from "../src/server/bootstrap";
 import { importProducts } from "../src/server/catalog-import";
 import { hashPassword, randomToken, sha256 } from "../src/lib/auth";
 import { audit } from "../src/lib/audit";
+import { DEFAULT_SETTINGS } from "../src/lib/settings";
 
 async function main() {
   await pool.query("CREATE EXTENSION IF NOT EXISTS pg_trgm");
@@ -33,6 +34,22 @@ async function main() {
   if (v && v.amountMinor === 5_000_000 && v.currency === "ILS") {
     await db.update(settings).set({ value: { amountMinor: 0, currency: "ILS" }, updatedAt: new Date() }).where(eq(settings.key, "minimumOrderValue"));
     console.log("Minimum order value: old B2B default (₪50,000) removed.");
+  }
+
+  // Pay-now checkout (Oct 2026): first-order / new-account reviews and mandatory confirmation were B2B
+  // defaults that sent every order to manual review, so customers could never pay right away.
+  // Only values still equal to the old defaults are changed; anything staff edited is kept.
+  const rules = (await db.select().from(settings).where(eq(settings.key, "orderRules")))[0];
+  const r = rules?.value as Record<string, unknown> | undefined;
+  if (r && r.requireOrderConfirmation === true && r.reviewFirstOrder === true && r.newCompanyReviewDays === 30) {
+    await db.update(settings).set({ value: { ...r, requireOrderConfirmation: false, reviewFirstOrder: false, newCompanyReviewDays: 0 }, updatedAt: new Date() }).where(eq(settings.key, "orderRules"));
+    console.log("Order rules: old B2B review defaults removed (orders above the value threshold are still reviewed).");
+  }
+  const ship = (await db.select().from(settings).where(eq(settings.key, "shippingMethods")))[0];
+  const methods = ship?.value as { code: string }[] | undefined;
+  if (methods && methods.map((m) => m.code).join(",") === "VALDEN_FREIGHT,BUYER_FORWARDER") {
+    await db.update(settings).set({ value: [DEFAULT_SETTINGS.shippingMethods[0], ...methods], updatedAt: new Date() }).where(eq(settings.key, "shippingMethods"));
+    console.log("Shipping: flat-rate standard delivery added (edit the amount in Admin › Settings).");
   }
 
   // Add listings that are new in data/catalog.json; never touch existing ones (staff may have edited them).

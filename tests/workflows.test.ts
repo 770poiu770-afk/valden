@@ -9,7 +9,8 @@ import { DEFAULT_SETTINGS, setSetting, getSettings } from "@/lib/settings";
 import { changeCompanyStatus, registerCustomer, requestPasswordReset, resetPassword, updateAccountProfile } from "@/server/accounts";
 import { getProductDetail, searchCatalog } from "@/server/catalog";
 import { upsertCartLines, viewCart } from "@/server/cart";
-import { cancelOrder, confirmOrder, createShipment, loadOrderFor, orderBundle, placeOrderFromCart, updateShipment, withCheckoutAddresses } from "@/server/orders";
+import { CheckoutInput, cancelOrder, confirmOrder, createShipment, loadOrderFor, orderBundle, placeOrderFromCart, updateShipment, withCheckoutAddresses } from "@/server/orders";
+import { getRate } from "@/lib/fx";
 import { acceptOffer, issueOffer, quoteBundle, requestQuote } from "@/server/quotes";
 import { cancelPayPalPayment, capturePayPalPayment, handlePayPalWebhook, issueRefund, reconcilePayPalPayment, recordManualPayment, startPayPalPayment, switchPaymentMethod } from "@/server/payments";
 import { importPricesCsv, importProducts, parseCatalogCsv, exportPricesCsv } from "@/server/catalog-import";
@@ -292,8 +293,9 @@ describe("9–10. quotations", () => {
     expect(offered.status).toBe("OFFERED");
     expect(offered.offerTotalBaseCents).toBe(145000n * 500n);
     const order = await acceptOffer(b.actor, q.id, checkout(b, { currency: "USD", paymentMethod: "MANUAL_TRANSFER" }));
-    expect(order.status).toBe("PENDING_REVIEW"); // price agreed, but risk rules (new account, first order, value) still apply
-    expect(order.riskReasons.join()).toMatch(/First paid order/);
+    expect(order.status).toBe("PENDING_REVIEW"); // price agreed, but the high-value review rule still applies
+    expect(order.riskReasons.join()).toMatch(/review threshold/);
+    expect(order.riskReasons.join()).not.toMatch(/First paid order|approved less than/); // B2B review rules are off by default
     const items = (await orderBundle(b.actor, order.id)).items;
     expect(items[0].unitBaseCents).toBe(145000);
     expect(items[0].priceSource).toBe("QUOTE");
@@ -336,7 +338,64 @@ describe("11–15. PayPal sandbox flow, webhooks, failures and refunds", () => {
     expect(p.providerCaptureId).toBe(`CAP-${first.paypalOrderId}`);
     expect(await capturePayPalPayment(b.actor, order.id, first.paypalOrderId)).toEqual({ status: "COMPLETED" }); // idempotent
   });
-  it("refuses payment before trade-desk confirmation", async () => {
+  it("lets a new customer pay right away: standard delivery, server-side totals, cancel, then PayPal capture", async () => {
+    const r = await registerCustomer(regInput({ fullName: "Noa Levi" }));
+    const a = (await loadActorByUserId(r.userId))! as Awaited<ReturnType<typeof approvedBuyer>>["actor"];
+    const { p, v } = await variantOf("apple-iphone-17-pro-256gb");
+    await upsertCartLines(a, [{ variantId: v.id, quantity: 2 }], "set");
+    // Body as a browser would send it, plus tampered price/status fields that must be ignored.
+    const raw = { currency: "ILS", shippingMethod: "STANDARD_DELIVERY", paymentMethod: "PAYPAL", billingSameAsShipping: true,
+      newShipping: { contactName: "Noa Levi", line1: "1 Rothschild Blvd", city: "Tel Aviv", countryCode: "IL" },
+      totalCents: "1", subtotalCents: "1", shippingCents: "0", unitCents: "1", status: "PAID", paymentStatus: "PAID" };
+    const order = await placeOrderFromCart(a, CheckoutInput.parse(await withCheckoutAddresses(a, raw)));
+    expect(order.status).toBe("AWAITING_PAYMENT"); // no manual review for a normal-size order with flat-rate delivery
+    expect(order.paymentStatus).toBe("UNPAID");
+    const rate = (await getRate("ILS"))!;
+    const unit = convertMinor(BigInt(p.wholesaleCents!), rate.rate);
+    const ship = convertMinor(1_000n, rate.rate); // US$10 flat rate, converted
+    expect(order.subtotalCents).toBe(unit * 2n);
+    expect(order.shippingCents).toBe(ship);
+    expect(order.taxRateBps).toBe(1_800);
+    expect(order.totalCents).toBe(order.subtotalCents + ship + ((order.subtotalCents + ship) * 1_800n + 5_000n) / 10_000n);
+
+    // PayPal is asked for exactly the server total.
+    const first = await startPayPalPayment(a, order.id);
+    expect(pp.orders.get(first.paypalOrderId)!.amount).toEqual({ currency_code: "ILS", value: minorToDecimalString(order.totalCents) });
+
+    // Buyer closes the PayPal window: nothing approved at PayPal → attempt cancelled, order still unpaid.
+    pp.getOrderStatus = "CREATED";
+    expect((await cancelPayPalPayment(a, order.id, first.paypalOrderId)).status).toBe("CANCELLED");
+    pp.getOrderStatus = null;
+    let o = (await db.select().from(orders).where(eq(orders.id, order.id)))[0];
+    expect([o.status, o.paymentStatus]).toEqual(["AWAITING_PAYMENT", "UNPAID"]);
+    await expect(capturePayPalPayment(a, order.id, first.paypalOrderId)).rejects.toThrow(/closed/); // a cancelled attempt can't be captured
+
+    // Retry and pay: only the server-side capture marks the order paid.
+    const second = await startPayPalPayment(a, order.id);
+    expect(second.paypalOrderId).not.toBe(first.paypalOrderId);
+    pp.captureBehaviour = "COMPLETED";
+    expect((await capturePayPalPayment(a, order.id, second.paypalOrderId)).status).toBe("COMPLETED");
+    o = (await db.select().from(orders).where(eq(orders.id, order.id)))[0];
+    expect([o.status, o.paymentStatus]).toEqual(["PAID", "PAID"]);
+  });
+  it("gives the browser no way to mark an order paid", async () => {
+    const r = await registerCustomer(regInput());
+    const a = (await loadActorByUserId(r.userId))! as Awaited<ReturnType<typeof approvedBuyer>>["actor"];
+    const other = await approvedBuyer();
+    const { v } = await variantOf("apple-iphone-17-pro-256gb");
+    await upsertCartLines(a, [{ variantId: v.id, quantity: 1 }], "set");
+    const order = await placeOrderFromCart(a, CheckoutInput.parse(await withCheckoutAddresses(a, { currency: "ILS", shippingMethod: "STANDARD_DELIVERY", paymentMethod: "PAYPAL", billingSameAsShipping: true, newShipping: { contactName: "Dana", line1: "2 Herzl", city: "Haifa", countryCode: "IL" } })));
+    const s = await startPayPalPayment(a, order.id);
+    await expect(capturePayPalPayment(a, order.id, "PPO-INVENTED-BY-BROWSER")).rejects.toThrow(/not found/i); // unknown PayPal order id
+    await expect(capturePayPalPayment(other.actor, order.id, s.paypalOrderId)).rejects.toThrow(); // another customer
+    pp.captureBehaviour = "DECLINED";
+    expect((await capturePayPalPayment(a, order.id, s.paypalOrderId)).status).toBe("FAILED"); // PayPal says no → not paid
+    pp.captureBehaviour = "COMPLETED";
+    const o = (await db.select().from(orders).where(eq(orders.id, order.id)))[0];
+    expect(o.status).toBe("AWAITING_PAYMENT");
+    expect(o.paymentStatus).toBe("FAILED");
+  });
+  it("still sends staff-quoted freight to review before payment", async () => {
     const b = await approvedBuyer();
     const { v } = await variantOf("apple-iphone-17-pro-256gb");
     await upsertCartLines(b.actor, [{ variantId: v.id, quantity: 20 }], "set");

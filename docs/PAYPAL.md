@@ -3,10 +3,13 @@
 ## How it works
 
 ```
-Buyer places order ──► staff confirm (availability, freight, risk) ──► order AWAITING_PAYMENT
-                                                                         │
- PayPal button ──createOrder──► POST /api/orders/:id/paypal  (server creates PayPal order;
-                                                              PayPal-Request-Id = idempotency key)
+Cart ──► Checkout (address, delivery method, PayPal) ──► server prices the order from the database
+                                                          (unit prices, volume tiers, delivery, VAT)
+   Standard delivery (flat rate), normal-size order ──► order AWAITING_PAYMENT → PayPal button shown
+   Freight quoted by staff, or order ≥ review threshold ──► PENDING_REVIEW → staff confirm → AWAITING_PAYMENT
+
+ PayPal button ──createOrder──► POST /api/orders/:id/paypal  (server creates PayPal order for the
+                                                              server total; PayPal-Request-Id = idempotency key)
  Buyer approves in PayPal popup
  onApprove ─────────────────► POST /api/orders/:id/paypal/capture  (server captures; verifies
                                                               amount, currency and custom_id)
@@ -14,6 +17,10 @@ Buyer places order ──► staff confirm (availability, freight, risk) ──�
                                                          stored once per event ID, then applied)
 ```
 
+- Delivery methods and the flat-rate amount (USD, converted to the order currency) are edited in
+  **Admin › Settings › Shipping methods** (`flatRateBaseMinor`, e.g. `1000` = US$10). Orders at or
+  above **Review orders from (USD)** still go to staff review before payment.
+- Any price, total or status fields sent by the browser are ignored; the order is priced on the server.
 - The browser never tells the server an order is paid. Only a server-side capture response or a
   verified webhook can move a payment to `COMPLETED`, and only when the captured amount and currency
   equal what the order expects. A mismatch leaves the order unpaid and flags it for finance.
@@ -41,64 +48,51 @@ Buyer places order ──► staff confirm (availability, freight, risk) ──�
 Handled webhook events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, `.PENDING`,
 `.DENIED`, `.DECLINED`, `.REFUNDED`, `.REVERSED`, `CUSTOMER.DISPUTE.CREATED`, `.UPDATED`, `.RESOLVED`.
 
+## Environment variables (Railway → project `valden` → service `web` → Variables)
+
+| Variable | Staging (environment `staging`) | Live (separate environment, e.g. `production`) |
+|---|---|---|
+| `PAYPAL_ENV` | `sandbox` (already set) | `live` |
+| `PAYPAL_CLIENT_ID` | Sandbox app Client ID | Live app Client ID |
+| `PAYPAL_CLIENT_SECRET` | Sandbox app Secret | Live app Secret |
+| `PAYPAL_WEBHOOK_ID` | ID of the sandbox webhook | ID of the live webhook |
+| `ALLOW_SAMPLE_DATA` | `true` (sample catalog) | **must not be set** — live PayPal is refused while it is `true` |
+
+Secrets are typed directly into Railway Variables — never into chat, code, GitHub or the browser.
+Only the Client ID is sent to the browser (PayPal's button script needs it).
+
 ## Sandbox setup
 
-1. Sign in at developer.paypal.com and open **Apps & Credentials** in **Sandbox** mode.
-2. Create a REST app. Copy the **Client ID** and **Secret** into `.env`:
-   `PAYPAL_ENV=sandbox`, `PAYPAL_CLIENT_ID=…`, `PAYPAL_CLIENT_SECRET=…`.
-3. In the app, add a webhook pointing to `https://<your-host>/api/webhooks/paypal` (PayPal must be
-   able to reach it — use a deployed preview or a tunnel for local testing). Subscribe to the events
-   listed above. Copy the **Webhook ID** into `PAYPAL_WEBHOOK_ID`.
-4. Use the sandbox **personal** test account (Sandbox › Accounts) to pay. Restart the app after
-   changing environment variables.
-5. Test: place an order as an approved buyer, confirm it in Admin › Orders, pay from the order page,
-   then check Admin › Payments for the capture and the webhook events. Issue a partial refund from
-   the order page and confirm the `PAYMENT.CAPTURE.REFUNDED` event arrives.
-6. Use the webhook simulator in the developer dashboard to send a duplicate event and confirm the
-   second delivery is recorded as `duplicate_ignored`.
+1. developer.paypal.com → **Apps & Credentials** → toggle **Sandbox** → **Create App** (Merchant).
+   Copy the **Client ID** and **Secret** into Railway (`staging` → `web` → Variables).
+2. In the app → **Webhooks** → **Add Webhook**: URL `https://web-staging-58453.up.railway.app/api/webhooks/paypal`,
+   events: the list above (or "All events"). Copy the **Webhook ID** into `PAYPAL_WEBHOOK_ID`.
+3. Railway redeploys automatically after variables change (or press **Deploy**).
+4. Test with the sandbox **personal** account (developer.paypal.com → **Testing Tools → Sandbox Accounts**):
+   place an order with Standard delivery + PayPal, pay, and check the order shows **Paid**;
+   start another payment and press **Cancel** in PayPal — the order must stay **Awaiting payment**.
 
-## Connecting your real PayPal Business account (later, after Sandbox testing passes)
+## Going live (only after the sandbox test passes)
 
-Do this only after the Sandbox test plan in `docs/RAILWAY.md` §6 passes completely.
+1. A verified **PayPal Business** account. developer.paypal.com → **Apps & Credentials** → toggle
+   **Live** → **Create App** → copy Live **Client ID** and **Secret**.
+2. Create a separate Railway environment (e.g. `production`) so staging keeps using Sandbox; set the
+   Live variables from the table above there, without `ALLOW_SAMPLE_DATA`.
+3. Live app → **Webhooks** → URL `https://<live-domain>/api/webhooks/paypal` → `PAYPAL_WEBHOOK_ID`.
+4. Load real prices and exchange rates (live payments are refused against sample data).
+5. One small real payment and a refund, reconciled in PayPal's activity report, before opening to buyers.
 
-1. Open or upgrade to a **PayPal Business** account in the name of your registered company, and
-   complete PayPal's business verification (company documents, bank account, identity checks).
-2. At developer.paypal.com, sign in with that business account, switch **Apps & Credentials** to
-   **Live**, and create an app. Copy the live **Client ID** and **Secret**.
-3. Create a **separate Railway environment** (e.g. `production`) so staging keeps using Sandbox.
-   In that environment's `web` service **Variables**, enter yourself (never in chat or in GitHub):
-   `PAYPAL_ENV=live`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`. Remove `ALLOW_SAMPLE_DATA`.
-4. In the live app, add a webhook to `https://<your-live-domain>/api/webhooks/paypal` with the events
-   listed above, and set `PAYPAL_WEBHOOK_ID` to its ID.
-5. Load verified prices and real exchange rates, then run one small real payment and a refund, and
-   reconcile both in PayPal's activity report before inviting buyers.
+## Limitations
 
-## Production configuration
-
-1. Use a verified PayPal **Business** account in the country of your legal entity.
-2. Create a **Live** REST app; set `PAYPAL_ENV=live` with the live Client ID and Secret.
-3. Create a live webhook (same URL and events) and set its ID in `PAYPAL_WEBHOOK_ID`.
-4. Confirm with PayPal, in writing, the per-transaction and monthly limits for your account and
-   currencies (USD, EUR, ILS), and set **Settings › Payments › PayPal maximum** accordingly.
-5. Run one small live transaction end-to-end, refund it, and reconcile against the PayPal activity
-   report before opening to buyers.
-
-## Limitations to be aware of
-
-- PayPal decides account eligibility, available funding sources, limits, holds and fees. It may
-  decline, hold or review large transactions regardless of this platform's settings. A ₪300,000 order
-  should be expected to need bank transfer unless PayPal has confirmed otherwise.
-- Not every buyer can pay by card without a PayPal account; that depends on PayPal's rules for the
-  buyer's country and your merchant configuration.
-- If a buyer approves a payment but closes the browser before capture, the payment stays `APPROVED`
-  (recorded from the `CHECKOUT.ORDER.APPROVED` webhook) until finance uses **Check with PayPal**,
-  or the buyer returns and cancels/retries. Automatic scheduled reconciliation is a possible
-  enhancement.
+- PayPal decides eligibility, funding sources, limits, holds and fees. Orders above
+  **Settings › Payments › PayPal maximum** (default US$100,000) are paid by bank transfer.
+- If a buyer approves but closes the browser before capture, finance can press **Check with PayPal**
+  on the order page to capture and reconcile it.
 
 ## What has and has not been tested
 
-The PayPal flow is covered by automated tests using an in-memory PayPal double that mimics the
-REST responses (create, capture success/pending/declined/instrument-declined/amount mismatch,
-refunds, webhook verification results, duplicates, disputes). **No calls were made to PayPal's
-sandbox**: no credentials were available and PayPal's API was not reachable from the build
-environment. Complete the sandbox steps above before treating PayPal as connected.
+Automated tests use an in-memory PayPal double (create, capture success/pending/declined/
+instrument-declined/amount mismatch, cancellation, refunds, webhook verification, duplicates,
+disputes), plus HTTP checks against a production build. **No call has yet been made to PayPal's
+sandbox or live API** — that needs the credentials above. Treat PayPal as connected only after the
+sandbox test in step 4 passes, and as live only after the real low-value payment in "Going live".

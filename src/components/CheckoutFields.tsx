@@ -8,7 +8,7 @@ type Addr = typeof addresses.$inferSelect;
 const fmtAddr = (a: Addr) => [a.line1, a.line2, a.city, a.region, a.postalCode, a.countryCode].filter(Boolean).join(", ");
 
 /** Shared address / logistics / payment fields for cart checkout and quote acceptance. */
-export function CheckoutFields({ addrs, settings, currency, paypalBlocked, paypalReason, l = "en" }: { addrs: Addr[]; settings: AppSettings; currency: string; paypalBlocked: boolean; paypalReason?: string; l?: Locale }) {
+export function CheckoutFields({ addrs, settings, currency, paypalBlocked, paypalReason, l = "en", shippingPrices }: { addrs: Addr[]; settings: AppSettings; currency: string; paypalBlocked: boolean; paypalReason?: string; l?: Locale; shippingPrices?: Record<string, string | null> }) {
   const t = makeT(l);
   const ship = addrs.filter((a) => a.kind === "SHIPPING");
   const bill = addrs.filter((a) => a.kind === "BILLING");
@@ -56,7 +56,7 @@ export function CheckoutFields({ addrs, settings, currency, paypalBlocked, paypa
         <div className="space-y-2">{settings.shippingMethods.map((m, i) => (
           <label key={m.code} className="flex gap-2 rounded border border-line p-3 text-sm has-[:checked]:border-deep has-[:checked]:bg-deep-50">
             <input type="radio" name="shippingMethod" value={m.code} defaultChecked={i === 0} className="mt-1 accent-deep" />
-            <span><span className="font-medium text-deep-900">{shippingText(m, l).name}</span><br /><span className="text-steel-500">{shippingText(m, l).description}</span></span>
+            <span><span className="font-medium text-deep-900">{shippingText(m, l).name}</span>{shippingPrices && m.code in shippingPrices && <span className="num ms-2 font-semibold text-deep-900">{shippingPrices[m.code] ?? t("quoted after review", "יתומחר לאחר הבדיקה")}</span>}<br /><span className="text-steel-500">{shippingText(m, l).description}</span></span>
           </label>))}</div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div><label className="field-label" htmlFor="poNumber">{t("Purchase order number (optional)", "מספר הזמנת רכש (רשות)")}</label><input id="poNumber" name="poNumber" maxLength={60} className="input" /></div>
